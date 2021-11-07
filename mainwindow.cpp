@@ -49,126 +49,175 @@ void MainWindow::connectButtonSignals(Ui::MainWindow *ui){
     QObject::connect(ui->bitXORButton, &QPushButton::clicked, this, &MainWindow::bitXORButtonClicked);
     QObject::connect(ui->differentialButton, &QPushButton::clicked, this, &MainWindow::differentialButtonClicked);
     QObject::connect(ui->onButton, &QPushButton::clicked, this, &MainWindow::onButtonClicked);
+    QObject::connect(this, &MainWindow::displayAnswer, this, &MainWindow::displayAnswerClicked);
 }
 void MainWindow::zeroButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "0");
+    updateEntry("0");
 }
 void MainWindow::oneButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "1");
+    updateEntry("1");
 }
 void MainWindow::twoButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "2");
+    updateEntry("2");
+
 }
 void MainWindow::threeButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "3");
+    updateEntry("3");
+
 }
 void MainWindow::fourButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "4");
+    updateEntry("4");
+
 }
 void MainWindow::fiveButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "5");
+    updateEntry("5");
+
 }
 void MainWindow::sixButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "6");
+    updateEntry("6");
+
 }
 void MainWindow::sevenButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "7");
+    updateEntry("7");
+
 }
 void MainWindow::eightButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "8");
+    updateEntry("8");
+
 }
 void MainWindow::nineButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "9");
+    updateEntry("9");
+
 }
 void MainWindow::plusButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "+");
+    updateEntry("+");
+
 }
 void MainWindow::minusButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "-");
+    updateEntry("-");
+
 }
 void MainWindow::timesButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "*");
+    updateEntry("*");
+
 }
 void MainWindow::divideButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "/");
+    updateEntry("/");
+
 }
 void MainWindow::equalToButtonClicked(){
-    //ui->inputEntry->setText("9");
+    emit MainWindow::displayAnswer();
 }
 void MainWindow::piButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "π");
+    updateEntry("π");
+
 }
 void MainWindow::radixPointButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + ".");
+    updateEntry(".");
+
 }
 void MainWindow::answerButtonClicked(){
-    //ui->inputEntry->setText(".");
+    emit MainWindow::displayAnswer();
 }
 void MainWindow::deleteButtonClicked(){
-    ui->inputEntry->backspace();
+    updateEntry("clear");
 }
 void MainWindow::resetButtonClicked(){
-    ui->inputEntry->setText("0");
+    updateEntry("");
+
 }
 void MainWindow::openBracesButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "(");
+    updateEntry("(");
+
 }
 void MainWindow::closeBracesButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + ")");
+    updateEntry(")");
+
 }
 void MainWindow::sinButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "sin(");
+    updateEntry("sin(");
+
 }
 void MainWindow::cosButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "cos(");
+    updateEntry("cos(");
 }
 void MainWindow::tanButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "tan(");
+    updateEntry("tan(");
 }
 void MainWindow::logButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "log");
+    updateEntry("log");
+
 }
 void MainWindow::naturalLogButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "ln");
+    updateEntry("ln");
+
 }
 void MainWindow::inverseSinButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "sin-1(");
+    updateEntry("sin-1(");
+
 }
 void MainWindow::inverseCosButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "cos-1(");
+    updateEntry("cos-1(");
+
 }
 void MainWindow::inverseTanButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "tan-1(");
+    updateEntry("tan-1(");
 }
 void MainWindow::exponentButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "^");
+    updateEntry("^");
 }
 void MainWindow::squareButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "^2");
+    updateEntry("^2");
 }
 void MainWindow::rootButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "√");
+    updateEntry("√");
 }
 void MainWindow::squareRootButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "2√");
+    updateEntry("2√");
 }
 void MainWindow::complexNumberButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "j");
+    updateEntry("j");
 }
 void MainWindow::bitORButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "OR");
+    updateEntry("OR");
 }
 void MainWindow::bitANDButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "AND");
+    updateEntry("AND");
 }
 void MainWindow::bitXORButtonClicked(){
-    ui->inputEntry->setText(ui->inputEntry->text() + "XOR");
+    updateEntry("XOR");
 }
 void MainWindow::differentialButtonClicked(){
     //ui->inputEntry->setText(ui->inputEntry->text() + "(");
 }
 void MainWindow::onButtonClicked(){
-    //......
+    updateEntry("");
+}
+
+void MainWindow::updateEntry(std::optional<QString> entry){
+    if (entry.has_value()){
+        if (*entry == "clear"){
+            if (inputList.size() > 0){
+                ui->inputEntry->backspace();
+                inputList.pop_back();
+            }
+        }
+
+        else{
+            inputList.push_back(*entry);
+        }
+    }
+    else{
+        inputList.clear();
+    }
+    QString text = "";
+    for (auto const& elem : inputList)
+        text += elem;
+    ui->inputEntry->setText(text);
+}
+
+void MainWindow::displayAnswerClicked(){
+    ui->answerLabel->setText(currentAnswer);
 }
 
 

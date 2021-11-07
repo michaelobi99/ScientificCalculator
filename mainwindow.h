@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <vector>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -57,8 +59,16 @@ public slots:
     void bitXORButtonClicked();
     void differentialButtonClicked();
     void onButtonClicked();
+    void displayAnswerClicked();
+
+signals:
+    void displayAnswer();
 
 private:
     Ui::MainWindow *ui;
+    std::vector<QString> inputList;
+    QString currentAnswer{""};
+
+    void updateEntry(std::optional<QString>);
 };
 #endif // MAINWINDOW_H

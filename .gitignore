@@ -1,3 +1,4 @@
-ScientificCalculator.pro.user
-ScientificCalculator.pro
-mainwindow.ui
+*.user
+*.pro
+*.ui
+*.autosave
