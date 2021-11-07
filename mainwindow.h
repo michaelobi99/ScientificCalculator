@@ -13,7 +13,50 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
+    void connectButtonSignals(Ui::MainWindow*);
     ~MainWindow();
+
+public slots:
+    void zeroButtonClicked();
+    void oneButtonClicked();
+    void twoButtonClicked();
+    void threeButtonClicked();
+    void fourButtonClicked();
+    void fiveButtonClicked();
+    void sixButtonClicked();
+    void sevenButtonClicked();
+    void eightButtonClicked();
+    void nineButtonClicked();
+    void plusButtonClicked();
+    void minusButtonClicked();
+    void timesButtonClicked();
+    void divideButtonClicked();
+    void equalToButtonClicked();
+    void piButtonClicked();
+    void radixPointButtonClicked();
+    void answerButtonClicked();
+    void deleteButtonClicked();
+    void resetButtonClicked();
+    void openBracesButtonClicked();
+    void closeBracesButtonClicked();
+    void sinButtonClicked();
+    void cosButtonClicked();
+    void tanButtonClicked();
+    void logButtonClicked();
+    void naturalLogButtonClicked();
+    void inverseSinButtonClicked();
+    void inverseCosButtonClicked();
+    void inverseTanButtonClicked();
+    void exponentButtonClicked();
+    void squareButtonClicked();
+    void rootButtonClicked();
+    void squareRootButtonClicked();
+    void complexNumberButtonClicked();
+    void bitORButtonClicked();
+    void bitANDButtonClicked();
+    void bitXORButtonClicked();
+    void differentialButtonClicked();
+    void onButtonClicked();
 
 private:
     Ui::MainWindow *ui;
