@@ -1,2 +1,3 @@
-*.pro.user
-*.pro
+ScientificCalculator.pro.user
+ScientificCalculator.pro
+mainwindow.ui
