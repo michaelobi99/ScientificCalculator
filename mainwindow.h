@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <vector>
 #include <optional>
+#include <QRegularExpression>
+#include <QValidator>
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -57,18 +60,29 @@ public slots:
     void bitORButtonClicked();
     void bitANDButtonClicked();
     void bitXORButtonClicked();
-    void differentialButtonClicked();
-    void onButtonClicked();
+    void leftShiftButtonClicked();
+    void rightShiftButtonClicked();
     void displayAnswerClicked();
+    void mathOperatorButtonClicked();
+    //void keyBoardClicked();
 
 signals:
     void displayAnswer();
 
 private:
     Ui::MainWindow *ui;
-    std::vector<QString> inputList;
-    QString currentAnswer{""};
-
+    QString inputList;//contains all the user input
+    QString entryList;//contains the user present input
+    QString currentAnswer{"0"};
+    QString tempAnswer{"0"};
+    QString currentInput{"0"};
+    QString latterInput{"0"};
+    QString previousInput{"0"};
+    QString currentOperation{""};
+    QString previousOperation{""};
+    std::vector<QString> operators{"+", "-", "/", "*"};
+    unsigned inputCounter{0};
     void updateEntry(std::optional<QString>);
+    void inputValidator();
 };
 #endif // MAINWINDOW_H

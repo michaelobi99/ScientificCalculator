@@ -6,10 +6,23 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    inputValidator();
     connectButtonSignals(ui);
 }
 
+void MainWindow::inputValidator(){
+    //set the LineEntey validator using regular expression
+    //regular expression breakdown
+    //the entry should expect
+    //digits, 1 or more times...or
+    //+ or minus or times or the equalto sign
+    QRegularExpression rx(R"(\d+|\+|-|\*|=|\(|\))");
+    QValidator *validator = new QRegularExpressionValidator(rx, this);
+    ui->inputEntry->setValidator(validator);
+}
+
 void MainWindow::connectButtonSignals(Ui::MainWindow *ui){
+    //QObject::connect(ui->inputEntry, &QLineEdit::textEdited, this, &MainWindow::checkTextFromKeyBoard);
     QObject::connect(ui->zeroButton, &QPushButton::clicked, this, &MainWindow::zeroButtonClicked);
     QObject::connect(ui->oneButton, &QPushButton::clicked, this, &MainWindow::oneButtonClicked);
     QObject::connect(ui->twoButton, &QPushButton::clicked, this, &MainWindow::twoButtonClicked);
@@ -47,9 +60,17 @@ void MainWindow::connectButtonSignals(Ui::MainWindow *ui){
     QObject::connect(ui->bitORButton, &QPushButton::clicked, this, &MainWindow::bitORButtonClicked);
     QObject::connect(ui->bitANDButton, &QPushButton::clicked, this, &MainWindow::bitANDButtonClicked);
     QObject::connect(ui->bitXORButton, &QPushButton::clicked, this, &MainWindow::bitXORButtonClicked);
-    QObject::connect(ui->differentialButton, &QPushButton::clicked, this, &MainWindow::differentialButtonClicked);
-    QObject::connect(ui->onButton, &QPushButton::clicked, this, &MainWindow::onButtonClicked);
+    QObject::connect(ui->leftShiftButton, &QPushButton::clicked, this, &MainWindow::leftShiftButtonClicked);
+    QObject::connect(ui->rightShiftButton, &QPushButton::clicked, this, &MainWindow::rightShiftButtonClicked);
+    //signal slot to handle pressing on the equal to sign
     QObject::connect(this, &MainWindow::displayAnswer, this, &MainWindow::displayAnswerClicked);
+    //signal slot to clear the entry when a math operator button is clicked
+    QObject::connect(ui->inputEntry, &QLineEdit::editingFinished, this, &MainWindow::mathOperatorButtonClicked);
+}
+
+void MainWindow::mathOperatorButtonClicked(){
+    ui->userInputEntry->setText(inputList);
+    entryList.clear();
 }
 void MainWindow::zeroButtonClicked(){
     updateEntry("0");
@@ -59,62 +80,53 @@ void MainWindow::oneButtonClicked(){
 }
 void MainWindow::twoButtonClicked(){
     updateEntry("2");
-
 }
 void MainWindow::threeButtonClicked(){
     updateEntry("3");
-
 }
 void MainWindow::fourButtonClicked(){
     updateEntry("4");
-
 }
 void MainWindow::fiveButtonClicked(){
     updateEntry("5");
-
 }
 void MainWindow::sixButtonClicked(){
     updateEntry("6");
-
 }
 void MainWindow::sevenButtonClicked(){
     updateEntry("7");
-
 }
 void MainWindow::eightButtonClicked(){
     updateEntry("8");
-
 }
 void MainWindow::nineButtonClicked(){
     updateEntry("9");
-
 }
 void MainWindow::plusButtonClicked(){
     updateEntry("+");
-
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::minusButtonClicked(){
     updateEntry("-");
-
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::timesButtonClicked(){
     updateEntry("*");
-
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::divideButtonClicked(){
     updateEntry("/");
-
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::equalToButtonClicked(){
+    emit ui->inputEntry->editingFinished();
     emit MainWindow::displayAnswer();
 }
 void MainWindow::piButtonClicked(){
     updateEntry("π");
-
 }
 void MainWindow::radixPointButtonClicked(){
     updateEntry(".");
-
 }
 void MainWindow::answerButtonClicked(){
     emit MainWindow::displayAnswer();
@@ -123,20 +135,16 @@ void MainWindow::deleteButtonClicked(){
     updateEntry("clear");
 }
 void MainWindow::resetButtonClicked(){
-    updateEntry("");
-
+    updateEntry({});
 }
 void MainWindow::openBracesButtonClicked(){
     updateEntry("(");
-
 }
 void MainWindow::closeBracesButtonClicked(){
     updateEntry(")");
-
 }
 void MainWindow::sinButtonClicked(){
     updateEntry("sin(");
-
 }
 void MainWindow::cosButtonClicked(){
     updateEntry("cos(");
@@ -146,19 +154,15 @@ void MainWindow::tanButtonClicked(){
 }
 void MainWindow::logButtonClicked(){
     updateEntry("log");
-
 }
 void MainWindow::naturalLogButtonClicked(){
     updateEntry("ln");
-
 }
 void MainWindow::inverseSinButtonClicked(){
     updateEntry("sin-1(");
-
 }
 void MainWindow::inverseCosButtonClicked(){
     updateEntry("cos-1(");
-
 }
 void MainWindow::inverseTanButtonClicked(){
     updateEntry("tan-1(");
@@ -173,7 +177,7 @@ void MainWindow::rootButtonClicked(){
     updateEntry("√");
 }
 void MainWindow::squareRootButtonClicked(){
-    updateEntry("2√");
+    updateEntry("√");
 }
 void MainWindow::complexNumberButtonClicked(){
     updateEntry("j");
@@ -187,11 +191,11 @@ void MainWindow::bitANDButtonClicked(){
 void MainWindow::bitXORButtonClicked(){
     updateEntry("XOR");
 }
-void MainWindow::differentialButtonClicked(){
-    //ui->inputEntry->setText(ui->inputEntry->text() + "(");
+void MainWindow::leftShiftButtonClicked(){
+    updateEntry("<<");
 }
-void MainWindow::onButtonClicked(){
-    updateEntry("");
+void MainWindow::rightShiftButtonClicked(){
+    updateEntry(">>");
 }
 
 void MainWindow::updateEntry(std::optional<QString> entry){
@@ -199,21 +203,23 @@ void MainWindow::updateEntry(std::optional<QString> entry){
         if (*entry == "clear"){
             if (inputList.size() > 0){
                 ui->inputEntry->backspace();
-                inputList.pop_back();
+                entryList.clear();
+                ui->userInputEntry->setText(entryList);
+                inputList.clear();
             }
         }
-
         else{
-            inputList.push_back(*entry);
+            if (auto present = std::any_of(std::cbegin(operators), std::cend(operators), [entry](QString const& elem){
+                                           return *entry == elem;}); !present){
+                entryList += *entry;
+                ui->inputEntry->setText(entryList);
+            }
+            inputList += *entry;
         }
     }
     else{
         inputList.clear();
     }
-    QString text = "";
-    for (auto const& elem : inputList)
-        text += elem;
-    ui->inputEntry->setText(text);
 }
 
 void MainWindow::displayAnswerClicked(){
@@ -225,4 +231,3 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
