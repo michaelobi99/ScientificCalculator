@@ -2,11 +2,16 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <vector>
-#include <optional>
 #include <QRegularExpression>
 #include <QValidator>
+#include <QMessageBox>
+#include <vector>
+#include <deque>
+#include <unordered_map>
+#include <optional>
 #include <algorithm>
+#include <cmath>
+#include <regex>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -64,25 +69,37 @@ public slots:
     void rightShiftButtonClicked();
     void displayAnswerClicked();
     void mathOperatorButtonClicked();
-    //void keyBoardClicked();
 
 signals:
     void displayAnswer();
 
 private:
     Ui::MainWindow *ui;
-    QString inputList;//contains all the user input
-    QString entryList;//contains the user present input
+    std::vector<QString> inputList;//contains all the user input
+    std::vector<QString> entryList;//contains the user present input
     QString currentAnswer{"0"};
-    QString tempAnswer{"0"};
-    QString currentInput{"0"};
-    QString latterInput{"0"};
-    QString previousInput{"0"};
-    QString currentOperation{""};
-    QString previousOperation{""};
-    std::vector<QString> operators{"+", "-", "/", "*"};
+    QMessageBox messageBox;
+    std::optional<QString> currentOperation;
+    std::optional<QString> previousOperation;
+    std::vector<QString> operators{"+", "-", "/", "*", "^", "^2", "XOR", "OR", "AND", "<<", ">>", "√", "="};
+    std::unordered_map<QString, unsigned> operatorValueMap{{"+", 0}, {"-", 0}, {"*", 1}, {"/", 1}};
+    std::vector<std::string> expectedPatterns{//patterns to expect if the input is trig or logarithm.
+        R"(\d*\.?\d*\(*sin\(\d+\.?\d*\)\)*)",
+        R"(\d*\.?\d*\(*cos\(\d+\.?\d*\)\)*)",
+        R"(\d*\.?\d*\(*tan\(\d+\.?\d*\)\)*)",
+        R"(\d*\.?\d*\(*sin-1\(\d+\.?\d*\)\)*)",
+        R"(\d*\.?\d*\(*cos-1\(\d+\.?\d*\)\)*)",
+        R"(\d*\.?\d*\(*tan-1\(\d+\.?\d*\)\)*)",
+        R"(\d*\.?\d*\(*log\(\d+\.?\d*\)\)*)",
+        R"(\d*\.?\d*\(*ln\(\d+\.?\d*\)\)*)"
+    };
+    std::deque<float> parameters;//container to hold the last three inputs(if available) so that BODMAS can be applied
     unsigned inputCounter{0};
     void updateEntry(std::optional<QString>);
+    QString asString(std::vector<QString> const&);
+    bool parseParameter(QString const& entry);
+    float parseTrigOrLogInput(QString const& entry, bool&);
+    void setAnswer(float&);
     void inputValidator();
 };
 #endif // MAINWINDOW_H

@@ -62,14 +62,13 @@ void MainWindow::connectButtonSignals(Ui::MainWindow *ui){
     QObject::connect(ui->bitXORButton, &QPushButton::clicked, this, &MainWindow::bitXORButtonClicked);
     QObject::connect(ui->leftShiftButton, &QPushButton::clicked, this, &MainWindow::leftShiftButtonClicked);
     QObject::connect(ui->rightShiftButton, &QPushButton::clicked, this, &MainWindow::rightShiftButtonClicked);
-    //signal slot to handle pressing on the equal to sign
     QObject::connect(this, &MainWindow::displayAnswer, this, &MainWindow::displayAnswerClicked);
     //signal slot to clear the entry when a math operator button is clicked
     QObject::connect(ui->inputEntry, &QLineEdit::editingFinished, this, &MainWindow::mathOperatorButtonClicked);
 }
 
 void MainWindow::mathOperatorButtonClicked(){
-    ui->userInputEntry->setText(inputList);
+    ui->userInputEntry->setText(asString(inputList));
     entryList.clear();
 }
 void MainWindow::zeroButtonClicked(){
@@ -119,8 +118,10 @@ void MainWindow::divideButtonClicked(){
     emit ui->inputEntry->editingFinished();
 }
 void MainWindow::equalToButtonClicked(){
+    updateEntry("=");
     emit ui->inputEntry->editingFinished();
     emit MainWindow::displayAnswer();
+    inputList.clear();
 }
 void MainWindow::piButtonClicked(){
     updateEntry("π");
@@ -153,10 +154,10 @@ void MainWindow::tanButtonClicked(){
     updateEntry("tan(");
 }
 void MainWindow::logButtonClicked(){
-    updateEntry("log");
+    updateEntry("log(");
 }
 void MainWindow::naturalLogButtonClicked(){
-    updateEntry("ln");
+    updateEntry("ln(");
 }
 void MainWindow::inverseSinButtonClicked(){
     updateEntry("sin-1(");
@@ -169,63 +170,136 @@ void MainWindow::inverseTanButtonClicked(){
 }
 void MainWindow::exponentButtonClicked(){
     updateEntry("^");
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::squareButtonClicked(){
     updateEntry("^2");
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::rootButtonClicked(){
     updateEntry("√");
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::squareRootButtonClicked(){
     updateEntry("√");
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::complexNumberButtonClicked(){
     updateEntry("j");
 }
 void MainWindow::bitORButtonClicked(){
     updateEntry("OR");
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::bitANDButtonClicked(){
     updateEntry("AND");
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::bitXORButtonClicked(){
     updateEntry("XOR");
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::leftShiftButtonClicked(){
     updateEntry("<<");
+    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::rightShiftButtonClicked(){
     updateEntry(">>");
+    emit ui->inputEntry->editingFinished();
 }
 
 void MainWindow::updateEntry(std::optional<QString> entry){
     if (entry.has_value()){
         if (*entry == "clear"){
-            if (inputList.size() > 0){
-                ui->inputEntry->backspace();
-                entryList.clear();
-                ui->userInputEntry->setText(entryList);
-                inputList.clear();
+            if (entryList.size() > 0){
+                entryList.pop_back();
+                ui->inputEntry->setText(asString(entryList));
+            }
+            else{
+                ui->inputEntry->clear();
+                ui->userInputEntry->clear();
             }
         }
         else{
+            bool goodInput{true};
+            //check if the user pressed a mathematical operator button
+            //if false:
+            //it just keeps on updating the entry with the user input
+            //else:
+            //it calls parseParameter....which tries to solve the input and update the answer
             if (auto present = std::any_of(std::cbegin(operators), std::cend(operators), [entry](QString const& elem){
                                            return *entry == elem;}); !present){
-                entryList += *entry;
-                ui->inputEntry->setText(entryList);
+                entryList.push_back(*entry);
+                ui->inputEntry->setText(asString(entryList));
             }
-            inputList += *entry;
+            else{
+                goodInput = parseParameter(asString(entryList));
+                if (goodInput)
+                    inputList.push_back(asString(entryList)+ *entry);
+            }
         }
     }
-    else{
+    else{//reset button clicked
         inputList.clear();
+        entryList.clear();
+        ui->userInputEntry->setText(asString(inputList));
+        ui->inputEntry->setText(asString(entryList));
     }
+}
+
+QString MainWindow::asString(std::vector<QString> const& str){
+    QString temp{""};
+    for (auto const& elem : str) temp += elem;
+    return temp;
 }
 
 void MainWindow::displayAnswerClicked(){
     ui->answerLabel->setText(currentAnswer);
 }
 
+bool MainWindow::parseParameter(QString const &entry){
+    //checks to see if the user input can be converted to a floating point number...to enable solving
+    //if false:
+    //if parses it to see  if its because of a trigonometric parameter in the input
+    //if thats not the case also...then it throws an exception.
+    //return a boolean value to indicate correct or incorrect input
+    //setAnswer() sets the currentAnswer parameter to the value of value;
+    bool ok{false};
+    float value{0.0};
+    value = entry.toFloat(&ok);
+    if (ok){
+        parameters.push_back(value);
+        setAnswer(value);
+    }
+    else{
+        value = parseTrigOrLogInput(entry, ok);
+        setAnswer(value);
+    }
+    if (!ok) ui->inputEntry->clear();
+    return ok;
+}
+
+float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
+    auto patternPosition = std::find_if(std::begin(expectedPatterns), std::end(expectedPatterns),
+                                        [&entry](std::string& pattern){
+            return std::regex_match(entry.toStdString(), std::regex{pattern});});
+    if (patternPosition != std::end(expectedPatterns)){
+        //.....
+        ok = true;
+    }
+    else{
+        ok = false;
+        messageBox.setText("parser error: can't parse input");
+        messageBox.setWindowTitle("ERROR");
+        messageBox.exec();
+    }
+    return 0;
+}
+
+void MainWindow::setAnswer(float &value){
+    value = 0;
+    //.....
+}
 
 MainWindow::~MainWindow()
 {
