@@ -69,6 +69,7 @@ void MainWindow::connectButtonSignals(Ui::MainWindow *ui){
 
 void MainWindow::mathOperatorButtonClicked(){
     ui->userInputEntry->setText(asString(inputList));
+    ui->answerLabel->setText(currentAnswer);
     entryList.clear();
 }
 void MainWindow::zeroButtonClicked(){
@@ -181,7 +182,7 @@ void MainWindow::rootButtonClicked(){
     emit ui->inputEntry->editingFinished();
 }
 void MainWindow::squareRootButtonClicked(){
-    updateEntry("√");
+    updateEntry("sqrt(");
     emit ui->inputEntry->editingFinished();
 }
 void MainWindow::complexNumberButtonClicked(){
@@ -227,12 +228,14 @@ void MainWindow::updateEntry(std::optional<QString> entry){
             //it just keeps on updating the entry with the user input
             //else:
             //it calls parseParameter....which tries to solve the input and update the answer
-            if (auto present = std::any_of(std::cbegin(operators), std::cend(operators), [entry](QString const& elem){
-                                           return *entry == elem;}); !present){
+            auto present = std::find_if(std::cbegin(operators), std::cend(operators), [entry](QString const& elem){
+                                                       return *entry == elem;});
+            if (present == std::cend(operators)){
                 entryList.push_back(*entry);
                 ui->inputEntry->setText(asString(entryList));
             }
             else{
+                operation.push_back(*present);
                 goodInput = parseParameter(asString(entryList));
                 if (goodInput)
                     inputList.push_back(asString(entryList)+ *entry);
@@ -254,7 +257,8 @@ QString MainWindow::asString(std::vector<QString> const& str){
 }
 
 void MainWindow::displayAnswerClicked(){
-    ui->answerLabel->setText(currentAnswer);
+    parameters.clear();
+    operation.clear();
 }
 
 bool MainWindow::parseParameter(QString const &entry){
@@ -297,8 +301,35 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
 }
 
 void MainWindow::setAnswer(float &value){
-    value = 0;
-    //.....
+    parameters.push_back(value);
+    ++inputCounter;
+    if (inputCounter==1){
+        currentAnswer = QString::number(parameters[0]);
+    }
+    else if (inputCounter==2){
+        currentAnswer = QString::number(solve(parameters[0], parameters[1], operation[0]));
+    }
+    else if (inputCounter==3){
+        currentAnswer = QString::number(solve(parameters[0], parameters[1], parameters[2], operation[0], operation[1]));
+        parameters.pop_front();
+        operation.pop_front();
+        parameters[0] = currentAnswer.toFloat();
+    }
+    ui->answerLabel->setText(currentAnswer);
+}
+
+//ultimate recursion....feeling like a god now
+float MainWindow::solve(float const& a, float const& b, QString& op1){
+    if (op1 == "+") return a + b;
+    else if (op1 == "-") return a - b;
+    else if (op1 == "*") return a * b;
+    else return a / b;
+}
+float MainWindow::solve(float const& a, float const& b, float const& c, QString& op1, QString& op2){
+    if ((op1 == "*" || op1 == "/") && (op1 == "+" || op2 == "-"))
+        return solve(a, solve(b, c, op1), op2);
+    else
+        return solve(solve(a, b, op1), c,op2);
 }
 
 MainWindow::~MainWindow()

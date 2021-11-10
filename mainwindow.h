@@ -74,15 +74,17 @@ signals:
     void displayAnswer();
 
 private:
+    //private variables
     Ui::MainWindow *ui;
     std::vector<QString> inputList;//contains all the user input
     std::vector<QString> entryList;//contains the user present input
     QString currentAnswer{"0"};
     QMessageBox messageBox;
-    std::optional<QString> currentOperation;
-    std::optional<QString> previousOperation;
-    std::vector<QString> operators{"+", "-", "/", "*", "^", "^2", "XOR", "OR", "AND", "<<", ">>", "√", "="};
-    std::unordered_map<QString, unsigned> operatorValueMap{{"+", 0}, {"-", 0}, {"*", 1}, {"/", 1}};
+    std::deque<QString> operation;//deque to hold the current and previous mathematical operations
+    std::deque<float> parameters;//container to hold the last three inputs(if available) so that BODMAS can be applied
+    unsigned inputCounter{0};
+    //operators that triggers the updating of both full expression entry and final answer
+    std::vector<QString> operators{"+", "-", "/", "*", "="};
     std::vector<std::string> expectedPatterns{//patterns to expect if the input is trig or logarithm.
         R"(\d*\.?\d*\(*sin\(\d+\.?\d*\)\)*)",
         R"(\d*\.?\d*\(*cos\(\d+\.?\d*\)\)*)",
@@ -92,14 +94,25 @@ private:
         R"(\d*\.?\d*\(*tan-1\(\d+\.?\d*\)\)*)",
         R"(\d*\.?\d*\(*log\(\d+\.?\d*\)\)*)",
         R"(\d*\.?\d*\(*ln\(\d+\.?\d*\)\)*)"
+        R"(\d+\.?\d*\^\d+\.?\d*)",
+        R"(\d+\.?\d*\^2\d+\.?\d*)",
+        R"(\d+\.?\d*XOR\d+\.?\d*)",
+        R"(\d+\.?\d*OR\d+\.?\d*)",
+        R"(\d+\.?\d*AND\d+\.?\d*)",
+        R"(\d+\.?\d*<<\d+\.?\d*)",
+        R"(\d+\.?\d*>>\d+\.?\d*)",
+        R"(\d+\.?\d*√\d+\.?\d*)",
+        R"(\d*\.?\d*sqrt\(\d+\.?\d*\))"
     };
-    std::deque<float> parameters;//container to hold the last three inputs(if available) so that BODMAS can be applied
-    unsigned inputCounter{0};
+
+    //private functons
     void updateEntry(std::optional<QString>);
     QString asString(std::vector<QString> const&);
     bool parseParameter(QString const& entry);
     float parseTrigOrLogInput(QString const& entry, bool&);
     void setAnswer(float&);
+    float solve(float const&, float const&, QString&);
+    float solve(float const&, float const&, float const&, QString&, QString&);
     void inputValidator();
 };
 #endif // MAINWINDOW_H

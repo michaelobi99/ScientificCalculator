@@ -374,7 +374,7 @@ color: red;
 background-color: black;}</string>
         </property>
         <property name="text">
-         <string>√</string>
+         <string>sqrt</string>
         </property>
        </widget>
       </item>
