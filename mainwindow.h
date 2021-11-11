@@ -113,6 +113,7 @@ private:
     void setAnswer(float&);
     float solve(float const&, float const&, QString&);
     float solve(float const&, float const&, float const&, QString&, QString&);
+    void clearEntries();
     void inputValidator();
 };
 #endif // MAINWINDOW_H

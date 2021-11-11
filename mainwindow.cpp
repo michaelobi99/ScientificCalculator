@@ -217,8 +217,7 @@ void MainWindow::updateEntry(std::optional<QString> entry){
                 ui->inputEntry->setText(asString(entryList));
             }
             else{
-                ui->inputEntry->clear();
-                ui->userInputEntry->clear();
+                clearEntries();
             }
         }
         else{
@@ -235,7 +234,9 @@ void MainWindow::updateEntry(std::optional<QString> entry){
                 ui->inputEntry->setText(asString(entryList));
             }
             else{
-                operation.push_back(*present);
+                if (*present != "="){
+                    operation.push_back(*present);
+                }
                 goodInput = parseParameter(asString(entryList));
                 if (goodInput)
                     inputList.push_back(asString(entryList)+ *entry);
@@ -243,11 +244,19 @@ void MainWindow::updateEntry(std::optional<QString> entry){
         }
     }
     else{//reset button clicked
-        inputList.clear();
-        entryList.clear();
-        ui->userInputEntry->setText(asString(inputList));
-        ui->inputEntry->setText(asString(entryList));
+        clearEntries();
     }
+}
+
+void MainWindow::clearEntries(){
+    inputList.clear();
+    ui->inputEntry->clear();
+    ui->userInputEntry->clear();
+    ui->inputEntry->setText(asString(entryList));
+    parameters.clear();
+    operation.clear();
+    ui->answerLabel->setText("0");
+    inputCounter = 0;
 }
 
 QString MainWindow::asString(std::vector<QString> const& str){
@@ -272,7 +281,6 @@ bool MainWindow::parseParameter(QString const &entry){
     float value{0.0};
     value = entry.toFloat(&ok);
     if (ok){
-        parameters.push_back(value);
         setAnswer(value);
     }
     else{
@@ -311,9 +319,26 @@ void MainWindow::setAnswer(float &value){
     }
     else if (inputCounter==3){
         currentAnswer = QString::number(solve(parameters[0], parameters[1], parameters[2], operation[0], operation[1]));
-        parameters.pop_front();
-        operation.pop_front();
-        parameters[0] = currentAnswer.toFloat();
+        //update the state of the parameters using BODMAS
+        //if there are consecutive operations of similar precedence
+        if ((operation[0] == "+" || operation[0] == "-") && (operation[1] == "*" || operation[1] == "/")){
+            if (operation[1] == "*")
+                parameters[1] = parameters[1] * parameters[2];
+            else if (operation[1] == "/")
+                parameters[1] = parameters[1] / float(parameters[2]);
+            operation.erase(std::begin(operation) + 1);
+            for(auto elem : parameters) qDebug()<<elem<<"\n";
+            parameters.erase(std::begin(parameters) + 2);
+        }
+        else{
+            if (operation[0] == "+") parameters[1] = parameters[0] + parameters[1];
+            else if (operation[0] == "-") parameters[1] = parameters[0] - parameters[1];
+            else if (operation[0] == "*") parameters[1] = parameters[0] * parameters[1];
+            else parameters[1] = parameters[0] / float(parameters[1]);
+            parameters.pop_front();
+            operation.pop_front();
+        }
+        --inputCounter;
     }
     ui->answerLabel->setText(currentAnswer);
 }
@@ -323,11 +348,11 @@ float MainWindow::solve(float const& a, float const& b, QString& op1){
     if (op1 == "+") return a + b;
     else if (op1 == "-") return a - b;
     else if (op1 == "*") return a * b;
-    else return a / b;
+    else return a / float(b);
 }
 float MainWindow::solve(float const& a, float const& b, float const& c, QString& op1, QString& op2){
-    if ((op1 == "*" || op1 == "/") && (op1 == "+" || op2 == "-"))
-        return solve(a, solve(b, c, op1), op2);
+    if ((op1 == "+" || op1 == "-") && (op2 == "*" || op2 == "/"))
+        return solve(a, solve(b, c, op2), op1);
     else
         return solve(solve(a, b, op1), c,op2);
 }
