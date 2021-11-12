@@ -55,7 +55,7 @@ void MainWindow::connectButtonSignals(Ui::MainWindow *ui){
     QObject::connect(ui->exponentButton, &QPushButton::clicked, this, &MainWindow::exponentButtonClicked);
     QObject::connect(ui->squareButton, &QPushButton::clicked, this, &MainWindow::squareButtonClicked);
     QObject::connect(ui->rootButton, &QPushButton::clicked, this, &MainWindow::rootButtonClicked);
-    QObject::connect(ui->squareRootButton, &QPushButton::clicked, this, &MainWindow::squareRootButtonClicked);
+    QObject::connect(ui->factorialButton, &QPushButton::clicked, this, &MainWindow::factorialButtonClicked);
     QObject::connect(ui->complexNumberButton, &QPushButton::clicked, this, &MainWindow::complexNumberButtonClicked);
     QObject::connect(ui->bitORButton, &QPushButton::clicked, this, &MainWindow::bitORButtonClicked);
     QObject::connect(ui->bitANDButton, &QPushButton::clicked, this, &MainWindow::bitANDButtonClicked);
@@ -70,7 +70,8 @@ void MainWindow::connectButtonSignals(Ui::MainWindow *ui){
 void MainWindow::mathOperatorButtonClicked(){
     ui->userInputEntry->setText(asString(inputList));
     ui->answerLabel->setText(currentAnswer);
-    entryList.clear();
+    if (entryList.size() > 0)
+        entryList.clear();
 }
 void MainWindow::zeroButtonClicked(){
     updateEntry("0");
@@ -122,7 +123,6 @@ void MainWindow::equalToButtonClicked(){
     updateEntry("=");
     emit ui->inputEntry->editingFinished();
     emit MainWindow::displayAnswer();
-    inputList.clear();
 }
 void MainWindow::piButtonClicked(){
     updateEntry("π");
@@ -178,8 +178,8 @@ void MainWindow::squareButtonClicked(){
 void MainWindow::rootButtonClicked(){
     updateEntry("√");
 }
-void MainWindow::squareRootButtonClicked(){
-    updateEntry("sqrt(");
+void MainWindow::factorialButtonClicked(){
+    updateEntry("!");
 }
 void MainWindow::complexNumberButtonClicked(){
     updateEntry("j");
@@ -225,12 +225,16 @@ void MainWindow::updateEntry(std::optional<QString> entry){
                 ui->inputEntry->setText(asString(entryList));
             }
             else{
-                if (*present != "="){
-                    operation.push_back(*present);
+                //if statememts are meant to prevent the user from clicking the math operators multiple times at once
+                //also to prevent appending = sign in the operators list
+                if (inputList.empty() || std::none_of(std::begin(operators), std::end(operators), [this](QString& op){return op == inputList.back();})){
+                    if (*present != "="){
+                        operation.push_back(*present);
+                    }
+                    goodInput = parseParameter(asString(entryList));
+                    if (goodInput)
+                        inputList.push_back(asString(entryList)+ *entry);
                 }
-                goodInput = parseParameter(asString(entryList));
-                if (goodInput)
-                    inputList.push_back(asString(entryList)+ *entry);
             }
         }
     }
@@ -248,6 +252,7 @@ void MainWindow::clearEntries(){
     operation.clear();
     ui->answerLabel->setText("0");
     inputCounter = 0;
+    currentAnswer = "0";
 }
 
 QString MainWindow::asString(std::vector<QString> const& str){
@@ -256,14 +261,19 @@ QString MainWindow::asString(std::vector<QString> const& str){
     return temp;
 }
 
-void MainWindow::displayAnswerClicked(){
-    parameters.clear();
-    operation.clear();
+void MainWindow::displayAnswerClicked(){//clear the vectors holding values of the just completed operation
+    if (parameters.size() > 0 && operation.size() > 0){
+        parameters.clear();
+        operation.clear();
+        inputList.clear();
+    }
 }
 
 bool MainWindow::parseParameter(QString const &entry){
     //checks to see if the user input can be converted to a floating point number...to enable solving
     //if false:
+    //it checks to see if its a factorial operation instead
+    //if false
     //it checks to see if, perhaps, the user entered a value containing PI
     //if also false
     //it check for an entry with √
@@ -278,35 +288,90 @@ bool MainWindow::parseParameter(QString const &entry){
     if (ok){
         setAnswer(value);
     }
+
+    //factorial function
+    else if (auto str = entry.toStdString(); str.find("!") != std::wstring::npos){
+        auto r = std::regex{R"((\d+)(!))"};
+        auto match = std::smatch{};
+        if (std::regex_match(str, match, r)){
+            if (auto s = match[1].str(); s.empty())
+                showErrorMessage("Syntax Error");
+            else{
+                try{
+                    std::function<int(int const&)> factorial = [&factorial](int const& n){
+                         if (n==0) return 1;
+                         if (n == 1 || n == 2) return n;
+                         else return n * factorial(n - 1);
+                    };
+                    value = factorial(std::stoi(s));
+                    setAnswer(value);
+                    ok = true;
+                }
+                catch (std::invalid_argument const&){
+                    showErrorMessage("Syntax Error");
+                }
+                catch (std::exception const&){
+                    showErrorMessage("Math Error");
+                }
+            }
+        }
+        else{
+            showErrorMessage("Syntax Error");
+        }
+    }
+
+    //pi function
     else if (auto wstr = entry.toStdWString(); wstr.find(L"π") != std::wstring::npos){
         auto r = std::wregex{ L"(\\d*\\.?\\d*)(π)" };
         auto match = std::wsmatch{};
         if (std::regex_match(wstr, match, r)) {
-            if (auto s = match[1].str(); s.empty())
+            if (auto s = match[1].str(); s.empty()){
                 value = M_PI;
-            else
-                value = std::stof(s) * M_PI;
-            setAnswer(value);
-            ok = true;
+                setAnswer(value);
+                ok = true;
+            }
+            else{
+                try{
+                    value = std::stof(s) * M_PI;
+                    setAnswer(value);
+                    ok = true;
+                }
+                catch(std::invalid_argument const&){
+                    showErrorMessage("Syntax Error");
+                }
+            }
         }
         else{
-            showSyntaxErrorMessage();
+            showErrorMessage("Syntax Error");
         }
     }
+
+    //root function
     else if (auto wstr = entry.toStdWString(); wstr.find(L"√") != std::wstring::npos){
-        auto r = std::wregex{ L"(\\d+\\.?\\d*)(√)(\\d+\\.?\\d*)" };
+        auto r = std::wregex{ L"(\\d*\\.?\\d*)(√)(\\d+\\.?\\d*)" };
         auto match = std::wsmatch{};
         if (std::regex_match(wstr, match, r)) {
-            auto s1 = std::stof(match[1].str());
-            auto s2 = std::stof(match[3].str());
-            value = std::pow(s2, (1/s1));
-            setAnswer(value);
-            ok = true;
+            try{
+                auto s1{0.0}, s2{0.0};
+                if (match[1].str().empty())
+                    s1 = 2;
+                else
+                    s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
+                value = std::pow(s2, (1/s1));
+                setAnswer(value);
+                ok = true;
+            }
+            catch (std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
         }
         else{
-            showSyntaxErrorMessage();
+            showErrorMessage("Syntax Error");
         }
     }
+
+    //trig function
     else{
         value = parseTrigOrLogInput(entry, ok);
         setAnswer(value);
@@ -316,15 +381,183 @@ bool MainWindow::parseParameter(QString const &entry){
 }
 
 float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
+    std::smatch match;
+    auto str = entry.toStdString();
     auto patternPosition = std::find_if(std::begin(expectedPatterns), std::end(expectedPatterns),
-                                        [&entry](std::string& pattern){
-            return std::regex_match(entry.toStdString(), std::regex{pattern});});
+                                        [&match, &str](std::string& pattern){
+            return std::regex_match(str, match, std::regex{pattern});});
     if (patternPosition != std::end(expectedPatterns)){
-        //.....
-        ok = true;
+        if (match[2].str() == "sin"){
+            try{
+                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                ok = true;
+                return s1 * std::sin(s2);
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
+            }
+        }
+        else if (match[2].str() == "cos"){
+            try{
+                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                ok = true;
+                return s1 * std::cos(s2);
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
+            }
+        }
+        else if (match[2].str() == "tan"){
+            try{
+                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                ok = true;
+                return s1 * std::tan(s2);
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
+            }
+        }
+        else if (match[2].str() == "sin-1"){
+            try{
+                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                ok = true;
+                return s1 * std::asin(s2);
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
+            }
+        }
+        else if (match[2].str() == "cos-1"){
+            try{
+                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                ok = true;
+                return s1 * std::acos(s2);
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
+            }
+        }
+        else if (match[2].str() == "tan-1"){
+            try{
+                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                ok = true;
+                return s1 * std::atan(s2);
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
+            }
+        }
+        else if (match[2].str() == "log"){
+            try{
+                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                ok = true;
+                return s1 * std::log10(s2);
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
+        }
+        else if (match[2].str() == "ln"){
+            try{
+                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                ok = true;
+                return s1 * std::log(s2);
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
+        }
+        else if (match[2].str() == "^"){
+            try{
+                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                ok = true;
+                return std::pow(s1, s2);
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
+        }
+        else if (match[2].str() == "^2"){
+            try{
+                auto s1 = std::stof(match[1].str());
+                ok = true;
+                return s1 * std::pow(s1, 2);
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
+        }
+        else if (match[2].str() == "OR"){
+            try{
+                auto [s1, s2] = std::pair(std::stoi(match[1].str()), std::stoi(match[3].str()));
+                ok = true;
+                return s1 | s2;
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
+        }
+        else if (match[2].str() == "AND"){
+            try{
+                auto [s1, s2] = std::pair(std::stoi(match[1].str()), std::stoi(match[3].str()));
+                ok = true;
+                return s1 & s2;
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
+        }
+        else if (match[2].str() == "XOR"){
+            try{
+                auto [s1, s2] = std::pair(std::stoi(match[1].str()), std::stoi(match[3].str()));
+                ok = true;
+                return s1 ^ s2;
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
+        }
+        else if (match[2].str() == "<<"){
+            try{
+                auto [s1, s2] = std::pair(std::stoi(match[1].str()), std::stoi(match[3].str()));
+                ok = true;
+                return s1 << s2;
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
+        }
+        else if (match[2].str() == ">>"){
+            try{
+                auto [s1, s2] = std::pair(std::stoi(match[1].str()), std::stoi(match[3].str()));
+                ok = true;
+                return s1 >> s2;
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
+        }
     }
     else{
-        showSyntaxErrorMessage();
+        showErrorMessage("Syntax Error");
     }
     return 0;
 }
@@ -342,15 +575,15 @@ void MainWindow::setAnswer(float const& value){
         currentAnswer = QString::number(solve(parameters[0], parameters[1], parameters[2], operation[0], operation[1]));
         //update the state of the parameters using BODMAS
         //parameters and operation cannot have a size greater than 3
-        //if the operator precedence is ascending
-        //it solves from right to left, opdating the index parameter[1] is updated with parameter[1] op paremater[2]
+        //if the operator precedence is ascending:
+        //it solves from right to left, the index parameter[1] is updated with (parameter[1] op paremater[2])
         //then the index parameter[2] is deleted
-        //operation[1] is also delete....as it contains the used up operatorbetween parameter[1] op parameter[2]
+        //operation[1] is also deleted....as it contains the used up operator between (parameter[1] op parameter[2])
         //else
         //it solves from left to right
-        //index parameter[1] is updated with parameter[0] op parameter[1]
+        //index parameter[1] is updated with (parameter[0] op parameter[1])
         //then index parameter[0] is deleted
-        //operation[0] is also delete....as it contains the used up operatorbetween parameter[1] op parameter[2]
+        //operation[0] is also delete....as it contains the used up operator between (parameter[0] op parameter[1])
         if ((operation[0] == "+" || operation[0] == "-") && (operation[1] == "*" || operation[1] == "/")){
             if (operation[1] == "*")
                 parameters[1] = parameters[1] * parameters[2];
@@ -386,9 +619,9 @@ float MainWindow::solve(float const& a, float const& b, float const& c, QString&
         return solve(solve(a, b, op1), c,op2);
 }
 
-void MainWindow::showSyntaxErrorMessage(){
-    messageBox.setText("Syntax Error!!!");
-    messageBox.setWindowTitle("ERROR");
+void MainWindow::showErrorMessage(QString const& errorMessage){
+    messageBox.setText("Error: " + errorMessage);
+    messageBox.setWindowTitle("Error Message");
     messageBox.exec();
 }
 

@@ -367,14 +367,14 @@ background-color: black;}</string>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="squareRootButton">
+       <widget class="QPushButton" name="factorialButton">
         <property name="styleSheet">
-         <string notr="true">#squareRootButton{
+         <string notr="true">#factorialButton{
 color: red;
 background-color: black;}</string>
         </property>
         <property name="text">
-         <string>sqrt</string>
+         <string>!</string>
         </property>
        </widget>
       </item>
