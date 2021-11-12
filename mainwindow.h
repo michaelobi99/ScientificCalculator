@@ -101,7 +101,6 @@ private:
         R"(\d+\.?\d*AND\d+\.?\d*)",
         R"(\d+\.?\d*<<\d+\.?\d*)",
         R"(\d+\.?\d*>>\d+\.?\d*)",
-        R"(\d+\.?\d*√\d+\.?\d*)",
         R"(\d*\.?\d*sqrt\(\d+\.?\d*\))"
     };
 
@@ -110,10 +109,11 @@ private:
     QString asString(std::vector<QString> const&);
     bool parseParameter(QString const& entry);
     float parseTrigOrLogInput(QString const& entry, bool&);
-    void setAnswer(float&);
+    void setAnswer(float const&);
     float solve(float const&, float const&, QString&);
     float solve(float const&, float const&, float const&, QString&, QString&);
     void clearEntries();
+    void showSyntaxErrorMessage();
     void inputValidator();
 };
 #endif // MAINWINDOW_H

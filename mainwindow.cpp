@@ -171,42 +171,33 @@ void MainWindow::inverseTanButtonClicked(){
 }
 void MainWindow::exponentButtonClicked(){
     updateEntry("^");
-    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::squareButtonClicked(){
     updateEntry("^2");
-    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::rootButtonClicked(){
     updateEntry("√");
-    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::squareRootButtonClicked(){
     updateEntry("sqrt(");
-    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::complexNumberButtonClicked(){
     updateEntry("j");
 }
 void MainWindow::bitORButtonClicked(){
     updateEntry("OR");
-    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::bitANDButtonClicked(){
     updateEntry("AND");
-    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::bitXORButtonClicked(){
     updateEntry("XOR");
-    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::leftShiftButtonClicked(){
     updateEntry("<<");
-    emit ui->inputEntry->editingFinished();
 }
 void MainWindow::rightShiftButtonClicked(){
     updateEntry(">>");
-    emit ui->inputEntry->editingFinished();
 }
 
 void MainWindow::updateEntry(std::optional<QString> entry){
@@ -273,7 +264,11 @@ void MainWindow::displayAnswerClicked(){
 bool MainWindow::parseParameter(QString const &entry){
     //checks to see if the user input can be converted to a floating point number...to enable solving
     //if false:
-    //if parses it to see  if its because of a trigonometric parameter in the input
+    //it checks to see if, perhaps, the user entered a value containing PI
+    //if also false
+    //it check for an entry with √
+    //if that's false again
+    //if parses it to see if its a trigonometric parameter in the input
     //if thats not the case also...then it throws an exception.
     //return a boolean value to indicate correct or incorrect input
     //setAnswer() sets the currentAnswer parameter to the value of value;
@@ -282,6 +277,35 @@ bool MainWindow::parseParameter(QString const &entry){
     value = entry.toFloat(&ok);
     if (ok){
         setAnswer(value);
+    }
+    else if (auto wstr = entry.toStdWString(); wstr.find(L"π") != std::wstring::npos){
+        auto r = std::wregex{ L"(\\d*\\.?\\d*)(π)" };
+        auto match = std::wsmatch{};
+        if (std::regex_match(wstr, match, r)) {
+            if (auto s = match[1].str(); s.empty())
+                value = M_PI;
+            else
+                value = std::stof(s) * M_PI;
+            setAnswer(value);
+            ok = true;
+        }
+        else{
+            showSyntaxErrorMessage();
+        }
+    }
+    else if (auto wstr = entry.toStdWString(); wstr.find(L"√") != std::wstring::npos){
+        auto r = std::wregex{ L"(\\d+\\.?\\d*)(√)(\\d+\\.?\\d*)" };
+        auto match = std::wsmatch{};
+        if (std::regex_match(wstr, match, r)) {
+            auto s1 = std::stof(match[1].str());
+            auto s2 = std::stof(match[3].str());
+            value = std::pow(s2, (1/s1));
+            setAnswer(value);
+            ok = true;
+        }
+        else{
+            showSyntaxErrorMessage();
+        }
     }
     else{
         value = parseTrigOrLogInput(entry, ok);
@@ -300,15 +324,12 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
         ok = true;
     }
     else{
-        ok = false;
-        messageBox.setText("parser error: can't parse input");
-        messageBox.setWindowTitle("ERROR");
-        messageBox.exec();
+        showSyntaxErrorMessage();
     }
     return 0;
 }
 
-void MainWindow::setAnswer(float &value){
+void MainWindow::setAnswer(float const& value){
     parameters.push_back(value);
     ++inputCounter;
     if (inputCounter==1){
@@ -320,14 +341,22 @@ void MainWindow::setAnswer(float &value){
     else if (inputCounter==3){
         currentAnswer = QString::number(solve(parameters[0], parameters[1], parameters[2], operation[0], operation[1]));
         //update the state of the parameters using BODMAS
-        //if there are consecutive operations of similar precedence
+        //parameters and operation cannot have a size greater than 3
+        //if the operator precedence is ascending
+        //it solves from right to left, opdating the index parameter[1] is updated with parameter[1] op paremater[2]
+        //then the index parameter[2] is deleted
+        //operation[1] is also delete....as it contains the used up operatorbetween parameter[1] op parameter[2]
+        //else
+        //it solves from left to right
+        //index parameter[1] is updated with parameter[0] op parameter[1]
+        //then index parameter[0] is deleted
+        //operation[0] is also delete....as it contains the used up operatorbetween parameter[1] op parameter[2]
         if ((operation[0] == "+" || operation[0] == "-") && (operation[1] == "*" || operation[1] == "/")){
             if (operation[1] == "*")
                 parameters[1] = parameters[1] * parameters[2];
             else if (operation[1] == "/")
                 parameters[1] = parameters[1] / float(parameters[2]);
             operation.erase(std::begin(operation) + 1);
-            for(auto elem : parameters) qDebug()<<elem<<"\n";
             parameters.erase(std::begin(parameters) + 2);
         }
         else{
@@ -343,18 +372,24 @@ void MainWindow::setAnswer(float &value){
     ui->answerLabel->setText(currentAnswer);
 }
 
-//ultimate recursion....feeling like a god now
 float MainWindow::solve(float const& a, float const& b, QString& op1){
     if (op1 == "+") return a + b;
     else if (op1 == "-") return a - b;
     else if (op1 == "*") return a * b;
     else return a / float(b);
 }
+
 float MainWindow::solve(float const& a, float const& b, float const& c, QString& op1, QString& op2){
     if ((op1 == "+" || op1 == "-") && (op2 == "*" || op2 == "/"))
         return solve(a, solve(b, c, op2), op1);
     else
         return solve(solve(a, b, op1), c,op2);
+}
+
+void MainWindow::showSyntaxErrorMessage(){
+    messageBox.setText("Syntax Error!!!");
+    messageBox.setWindowTitle("ERROR");
+    messageBox.exec();
 }
 
 MainWindow::~MainWindow()
