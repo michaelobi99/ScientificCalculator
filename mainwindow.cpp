@@ -383,15 +383,27 @@ bool MainWindow::parseParameter(QString const &entry){
 float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
     std::smatch match;
     auto str = entry.toStdString();
+    unsigned counter{0};
     auto patternPosition = std::find_if(std::begin(expectedPatterns), std::end(expectedPatterns),
-                                        [&match, &str](std::string& pattern){
-            return std::regex_match(str, match, std::regex{pattern});});
+                                        [&match, &str, &counter](std::string& pattern){
+        ++counter;
+        return std::regex_match(str, match, std::regex{pattern});
+    });
+    std::vector<std::string> strOperation{"sin", "cos", "tan", "sin-1", "cos-1", "tan-1", "log", "ln", "^", "^2", "XOR", "OR", "AND", "<<", ">>"};
     if (patternPosition != std::end(expectedPatterns)){
-        if (match[2].str() == "sin"){
+        std::optional<float> s1;
+        float s2{0.0};
+        switch (counter){
+        case 1:{
+            qDebug()<<std::size(match)<<"\n";
             try{
-                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                if (match[1].str().empty())
+                    s1 = std::nullopt;
+                else
+                    s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
                 ok = true;
-                return s1 * std::sin(s2);
+                return s1.value_or(1.0) * std::sin(s2);
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -400,11 +412,16 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "cos"){
+            break;
+        case 2:{
             try{
-                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                if (match[1].str().empty())
+                    s1 = std::nullopt;
+                else
+                    s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
                 ok = true;
-                return s1 * std::cos(s2);
+                return s1.value_or(1.0) * std::cos(s2);
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -413,11 +430,16 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "tan"){
+            break;
+        case 3:{
             try{
-                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                if (match[1].str().empty())
+                    s1 = std::nullopt;
+                else
+                    s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
                 ok = true;
-                return s1 * std::tan(s2);
+                return s1.value_or(1.0) * std::tan(s2);
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -426,11 +448,16 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "sin-1"){
+            break;
+        case 4:{
             try{
-                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                if (match[1].str().empty())
+                    s1 = std::nullopt;
+                else
+                    s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
                 ok = true;
-                return s1 * std::asin(s2);
+                return s1.value_or(1.0) * std::asin(s2);
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -439,11 +466,16 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "cos-1"){
+            break;
+        case 5:{
             try{
-                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                if (match[1].str().empty())
+                    s1 = std::nullopt;
+                else
+                    s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
                 ok = true;
-                return s1 * std::acos(s2);
+                return s1.value_or(1.0) * std::acos(s2);
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -452,11 +484,16 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "tan-1"){
+            break;
+        case 6:{
             try{
-                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                if (match[1].str().empty())
+                    s1 = std::nullopt;
+                else
+                    s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
                 ok = true;
-                return s1 * std::atan(s2);
+                return s1.value_or(1.0) * std::atan(s2);
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -465,95 +502,148 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "log"){
+            break;
+        case 7:{
             try{
-                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                if (match[1].str().empty())
+                    s1 = std::nullopt;
+                else
+                    s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
                 ok = true;
-                return s1 * std::log10(s2);
+                return s1.value_or(1.0) * std::log10(s2);
             }
             catch(std::invalid_argument const&){
-                showErrorMessage("Syntax Error");
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "ln"){
+            break;
+        case 8:{
             try{
-                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                if (match[1].str().empty())
+                    s1 = std::nullopt;
+                else
+                    s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
                 ok = true;
-                return s1 * std::log(s2);
+                return s1.value_or(1.0) * std::log(s2);
             }
             catch(std::invalid_argument const&){
-                showErrorMessage("Syntax Error");
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "^"){
+            break;
+        case 9:{
             try{
-                auto [s1, s2] = std::pair(std::stof(match[1].str()), std::stof(match[3].str()));
+                s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
                 ok = true;
-                return std::pow(s1, s2);
+                return std::pow(s1.value(), s2);
             }
             catch(std::invalid_argument const&){
-                showErrorMessage("Syntax Error");
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "^2"){
+            break;
+        case 10:{
             try{
-                auto s1 = std::stof(match[1].str());
+                s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
                 ok = true;
-                return s1 * std::pow(s1, 2);
+                return std::pow(s1.value(), s2);
             }
             catch(std::invalid_argument const&){
-                showErrorMessage("Syntax Error");
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "OR"){
+            break;
+        case 11:{
             try{
-                auto [s1, s2] = std::pair(std::stoi(match[1].str()), std::stoi(match[3].str()));
-                ok = true;
-                return s1 | s2;
-            }
-            catch(std::invalid_argument const&){
-                showErrorMessage("Syntax Error");
-            }
-        }
-        else if (match[2].str() == "AND"){
-            try{
-                auto [s1, s2] = std::pair(std::stoi(match[1].str()), std::stoi(match[3].str()));
-                ok = true;
-                return s1 & s2;
-            }
-            catch(std::invalid_argument const&){
-                showErrorMessage("Syntax Error");
-            }
-        }
-        else if (match[2].str() == "XOR"){
-            try{
-                auto [s1, s2] = std::pair(std::stoi(match[1].str()), std::stoi(match[3].str()));
+                int s1 = std::stoi(match[1].str());
+                int s2 = std::stoi(match[3].str());
                 ok = true;
                 return s1 ^ s2;
             }
             catch(std::invalid_argument const&){
-                showErrorMessage("Syntax Error");
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == "<<"){
+            break;
+        case 12:{
             try{
-                auto [s1, s2] = std::pair(std::stoi(match[1].str()), std::stoi(match[3].str()));
+                int s1 = std::stoi(match[1].str());
+                int s2 = std::stoi(match[3].str());
+                ok = true;
+                return s1 | s2;
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
+            }
+        }
+            break;
+        case 13:{
+            try{
+                int s1 = std::stoi(match[1].str());
+                int s2 = std::stoi(match[3].str());
+                ok = true;
+                return s1 & s2;
+            }
+            catch(std::invalid_argument const&){
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
+            }
+        }
+            break;
+        case 14:{
+            try{
+                int s1 = std::stoi(match[1].str());
+                int s2 = std::stoi(match[3].str());
                 ok = true;
                 return s1 << s2;
             }
             catch(std::invalid_argument const&){
-                showErrorMessage("Syntax Error");
+                showErrorMessage("Syntax ERROR");
+            }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
             }
         }
-        else if (match[2].str() == ">>"){
+            break;
+        case 15:{
             try{
-                auto [s1, s2] = std::pair(std::stoi(match[1].str()), std::stoi(match[3].str()));
+                int s1 = std::stoi(match[1].str());
+                int s2 = std::stoi(match[3].str());
                 ok = true;
                 return s1 >> s2;
             }
             catch(std::invalid_argument const&){
-                showErrorMessage("Syntax Error");
+                showErrorMessage("Syntax ERROR");
             }
+            catch(std::exception const&){
+                showErrorMessage("Math ERROR");
+            }
+        }
+            break;
         }
     }
     else{
