@@ -239,6 +239,10 @@ void MainWindow::updateEntry(std::optional<QString> entry){
         }
     }
     else{//reset button clicked
+        if (entryList.size() > 0){
+            entryList.clear();
+            ui->inputEntry->setText(asString(entryList));
+        }
         clearEntries();
     }
 }
@@ -389,7 +393,7 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
         ++counter;
         return std::regex_match(str, match, std::regex{pattern});
     });
-    std::vector<std::string> strOperation{"sin", "cos", "tan", "sin-1", "cos-1", "tan-1", "log", "ln", "^", "^2", "XOR", "OR", "AND", "<<", ">>"};
+
     if (patternPosition != std::end(expectedPatterns)){
         std::optional<float> s1;
         float s2{0.0};
@@ -403,7 +407,7 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                     s1 = std::stof(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::sin(s2);
+                return s1.value_or(1.0) * std::sin([&s2](){return ((s2 * M_PI)/float(180));}());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -421,7 +425,7 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                     s1 = std::stof(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::cos(s2);
+                return s1.value_or(1.0) * std::cos([&s2](){return ((s2 * M_PI)/float(180));}());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -439,7 +443,7 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                     s1 = std::stof(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::tan(s2);
+                return s1.value_or(1.0) * std::tan([&s2](){return ((s2 * M_PI)/float(180));}());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -457,7 +461,7 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                     s1 = std::stof(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::asin(s2);
+                return s1.value_or(1.0) * [&s2](){ return (std::asin(s2) * 180) / M_PI;}();
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -475,7 +479,7 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                     s1 = std::stof(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::acos(s2);
+                return s1.value_or(1.0) * [&s2](){ return (std::acos(s2) * 180) / M_PI;}();
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -493,7 +497,7 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                     s1 = std::stof(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::atan(s2);
+                return s1.value_or(1.0) * [&s2](){ return (std::atan(s2) * 180) / M_PI;}();
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
