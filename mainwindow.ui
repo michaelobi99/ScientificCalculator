@@ -719,6 +719,7 @@ background-color: black;}</string>
         <property name="styleSheet">
          <string notr="true">#zeroButton{
 color: red;
+pressed: blue;
 background-color: black;}</string>
         </property>
         <property name="text">

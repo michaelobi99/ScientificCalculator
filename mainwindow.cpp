@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     inputValidator();
     connectButtonSignals(ui);
+    setButtonClickedColor(ui);
 }
 
 void MainWindow::inputValidator(){
@@ -65,6 +66,49 @@ void MainWindow::connectButtonSignals(Ui::MainWindow *ui){
     QObject::connect(this, &MainWindow::displayAnswer, this, &MainWindow::displayAnswerClicked);
     //signal slot to clear the entry when a math operator button is clicked
     QObject::connect(ui->inputEntry, &QLineEdit::editingFinished, this, &MainWindow::mathOperatorButtonClicked);
+}
+
+void MainWindow::setButtonClickedColor(Ui::MainWindow*){
+    ui->zeroButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->oneButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->twoButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->threeButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->fourButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->fiveButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->sixButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->sevenButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->eightButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->nineButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->plusButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->minusButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->timesButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->divideButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->equalToButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->piButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->radixPointButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->answerButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->deleteButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->resetButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->openBracesButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->closeBracesButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->sineButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->cosineButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->tangentButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->logButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->naturalLogButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->inverseSinButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->inverseCosButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->inverseTanButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->exponentButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->squareButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->rootButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->factorialButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->complexNumberButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->bitORButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->bitANDButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->bitXORButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->leftShiftButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+    ui->rightShiftButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
 }
 
 void MainWindow::mathOperatorButtonClicked(){
@@ -225,15 +269,16 @@ void MainWindow::updateEntry(std::optional<QString> entry){
                 ui->inputEntry->setText(asString(entryList));
             }
             else{
-                //if statememts are meant to prevent the user from clicking the math operators multiple times at once
-                //also to prevent appending = sign in the operators list
-                if (inputList.empty() || std::none_of(std::begin(operators), std::end(operators), [this](QString& op){return op == inputList.back();})){
+                if (!entryList.empty()){//ignore an empty entry
+                    //to prevent appending = sign in the operators list
                     if (*present != "="){
                         operation.push_back(*present);
                     }
                     goodInput = parseParameter(asString(entryList));
-                    if (goodInput)
-                        inputList.push_back(asString(entryList)+ *entry);
+                    if (goodInput){
+                        inputList.push_back(asString(entryList));
+                        inputList.push_back(*entry);
+                    }
                 }
             }
         }
@@ -380,9 +425,12 @@ bool MainWindow::parseParameter(QString const &entry){
         value = parseTrigOrLogInput(entry, ok);
         setAnswer(value);
     }
-    if (!ok) ui->inputEntry->clear();
+    //clear the entry if parsing the input failed
+    if (!ok)
+        ui->inputEntry->clear();
     return ok;
 }
+
 
 float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
     std::smatch match;
