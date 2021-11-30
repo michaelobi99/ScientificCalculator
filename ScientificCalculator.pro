@@ -10,10 +10,12 @@ CONFIG += c++11
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    numbersystem.cpp
 
 HEADERS += \
-    mainwindow.h
+    mainwindow.h \
+    numbersystem.h
 
 FORMS += \
     mainwindow.ui

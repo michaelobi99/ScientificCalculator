@@ -300,6 +300,10 @@ void MainWindow::clearEntries(){
     parameters.clear();
     operation.clear();
     ui->answerLabel->setText("0");
+    ui->hexResult->setText("0");
+    ui->decResult->setText("0");
+    ui->octResult->setText("0");
+    ui->binResult->setText("0");
     inputCounter = 0;
     currentAnswer = "0";
 }
@@ -745,6 +749,11 @@ void MainWindow::setAnswer(float const& value){
         --inputCounter;
     }
     ui->answerLabel->setText(currentAnswer);
+    numberSystem.setNumber(currentAnswer.toDouble());
+    ui->decResult->setText(currentAnswer);
+    ui->hexResult->setText(QString::fromStdString(numberSystem.hexNotation()));
+    ui->octResult->setText(QString::fromStdString(numberSystem.octalNotation()));
+    ui->binResult->setText(QString::fromStdString(numberSystem.binaryNotation()));
 }
 
 float MainWindow::solve(float const& a, float const& b, QString& op1){

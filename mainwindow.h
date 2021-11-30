@@ -12,6 +12,7 @@
 #include <cmath>
 #include <functional>
 #include <regex>
+#include "numbersystem.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -76,6 +77,7 @@ signals:
 
 private:
     //private variables
+    stl::NumberSystem numberSystem;
     Ui::MainWindow *ui;
     std::vector<QString> inputList;//contains all the user input
     std::vector<QString> entryList;//contains the user present input
