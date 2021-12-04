@@ -279,6 +279,8 @@ void MainWindow::updateEntry(std::optional<QString> entry){
                         inputList.push_back(asString(entryList));
                         inputList.push_back(*entry);
                     }
+                    else
+                        clearEntries();
                 }
             }
         }
@@ -430,7 +432,9 @@ bool MainWindow::parseParameter(QString const &entry){
         setAnswer(value);
     }
     //clear the entry if parsing the input failed
-    if (!ok)
+    if (!ok){
+
+    }
         ui->inputEntry->clear();
     return ok;
 }

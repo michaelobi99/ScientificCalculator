@@ -18,15 +18,16 @@ std::string NumberSystem::hexNotation() {
 }
 
 std::string NumberSystem::decToBinary(){
-    auto isNegative = 0 > decimalNumber ? true : false;
+    auto m_decimalNumber = decimalNumber;
+    auto isNegative = 0 > m_decimalNumber ? true : false;
     std::optional<std::string> decPart{ std::nullopt };
     if (isNegative)
-        decimalNumber *= -1;
-    float fractionalPart = decimalNumber - ullType(decimalNumber);
+        m_decimalNumber *= -1;
+    float fractionalPart = m_decimalNumber - ullType(m_decimalNumber);
     if (fractionalPart > 0.0) {
         decPart = fractionalPartToBinary(fractionalPart);
     }
-    ullType quotient{ ullType(decimalNumber) }, remainder;
+    ullType quotient{ ullType(m_decimalNumber) }, remainder;
     std::string answer;
     while (quotient > 0) {
         remainder = quotient % 2;
@@ -67,15 +68,16 @@ std::string NumberSystem::fractionalPartToBinary(double const& decimalPart) {
 }
 
 std::string NumberSystem::decToOct() {
-    auto isNegative = 0 > decimalNumber ? true : false;
+    auto m_decimalNumber = decimalNumber;
+    auto isNegative = 0 > m_decimalNumber ? true : false;
     std::optional<std::string> decPart{ std::nullopt };
     if (isNegative)
-        decimalNumber *= -1;
-    float fractionalPart = decimalNumber - ullType(decimalNumber);
+        m_decimalNumber *= -1;
+    float fractionalPart = m_decimalNumber - ullType(m_decimalNumber);
     if (fractionalPart > 0.0) {
         decPart = fractionalPartToOctal(fractionalPart);
     }
-    ullType quotient{ ullType(decimalNumber) }, remainder;
+    ullType quotient{ ullType(m_decimalNumber) }, remainder;
     std::string answer;
     while (quotient > 0) {
         remainder = quotient % 8;
@@ -105,18 +107,24 @@ std::string NumberSystem::fractionalPartToOctal(double const& decimalPart) {
 }
 
 std::string NumberSystem::decToHex() {
+    std::string m_binaryNumber = binaryNumber;
+    auto isNegative{ false };
+    if (*m_binaryNumber.begin() == '-') {
+        isNegative = true;
+        m_binaryNumber.erase(std::begin(m_binaryNumber));
+    }
     std::unordered_map<std::string, std::string> binaryHexEquivalent{
-     {"0001", "1"}, {"0010", "2"}, {"0011", "3"}, {"0100", "4"}, {"0101", "5"},
+     {"0000", "0"}, {"0001", "1"}, {"0010", "2"}, {"0011", "3"}, {"0100", "4"}, {"0101", "5"},
      {"0110", "6"}, {"0111", " 7"}, {"1000", "8"}, {"1001", "9"}, {"1010", "A"},
      {"1011", "B"}, {"1100", "C"}, {"1101", "D"}, {"1110", "E"}, {"1111", "F"}
     };
     std::string integerPart{ "" };
     std::optional<std::string> decimalPart{ std::nullopt };
-    auto radixPosition = binaryNumber.find('.');
+    auto radixPosition = m_binaryNumber.find('.');
     if (radixPosition != std::string::npos) {
-        decimalPart = { binaryNumber, radixPosition + 1, binaryNumber.size() - radixPosition };
+        decimalPart = { m_binaryNumber, radixPosition + 1, m_binaryNumber.size() - radixPosition };
     }
-    integerPart = { binaryNumber, 0, radixPosition};
+    integerPart = { m_binaryNumber, 0, radixPosition};
 
     std::string answer{ "" };
     auto split = [](std::string_view number) {
@@ -141,5 +149,7 @@ std::string NumberSystem::decToHex() {
             answer += binaryHexEquivalent[elem];
         }
     }
+    if (isNegative)
+        answer = "-" + answer;
     return answer;
 }

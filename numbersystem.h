@@ -11,7 +11,7 @@
 #include <unordered_map>
 
 namespace stl {
-    class NumberSystem
+class NumberSystem
     {
     public:
         NumberSystem() = default;
