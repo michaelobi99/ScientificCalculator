@@ -13,6 +13,7 @@
 #include <functional>
 #include <regex>
 #include "numbersystem.h"
+#include "number.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -84,7 +85,7 @@ private:
     QString currentAnswer{"0"};
     QMessageBox messageBox;
     std::deque<QString> operation;//deque to hold the current and previous mathematical operations
-    std::deque<float> parameters;//container to hold the last three inputs(if available) so that BODMAS can be applied
+    std::deque<Number> parameters;//container to hold the last three inputs(if available) so that BODMAS can be applied
     unsigned inputCounter{0};
     //operators that triggers the updating of both full expression entry and final answer
     std::vector<QString> operators{"+", "-", "/", "*", "="};
@@ -113,10 +114,10 @@ private:
     void updateEntry(std::optional<QString>);
     QString asString(std::vector<QString> const&);
     bool parseParameter(QString const& entry);
-    float parseTrigOrLogInput(QString const& entry, bool&);
-    void setAnswer(float const&);
-    float solve(float const&, float const&, QString&);
-    float solve(float const&, float const&, float const&, QString&, QString&);
+    Number parseTrigOrLogInput(QString const& entry, bool&);
+    void setAnswer(Number const&);
+    Number solve(Number, Number, QString&);
+    Number solve(Number, Number, Number, QString&, QString&);
     void clearEntries();
     void showErrorMessage(QString const&);
     void inputValidator();

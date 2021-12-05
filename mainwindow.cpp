@@ -338,14 +338,14 @@ bool MainWindow::parseParameter(QString const &entry){
     //return a boolean value to indicate correct or incorrect input
     //setAnswer() sets the currentAnswer parameter to the value of value;
     bool ok{false};
-    float value{0.0};
-    value = entry.toFloat(&ok);
-    if (ok){
+    Number value;
+    if (entry.toFloat(&ok); ok){
+        value = entry.toStdString();
         setAnswer(value);
     }
 
     //factorial function
-    else if (auto str = entry.toStdString(); str.find("!") != std::wstring::npos){
+    else if (auto str = entry.toStdString(); str.find("!") != std::string::npos){
         auto r = std::regex{R"((\d+)(!))"};
         auto match = std::smatch{};
         if (std::regex_match(str, match, r)){
@@ -353,12 +353,8 @@ bool MainWindow::parseParameter(QString const &entry){
                 showErrorMessage("Syntax Error");
             else{
                 try{
-                    std::function<int(int const&)> factorial = [&factorial](int const& n){
-                         if (n==0) return 1;
-                         if (n == 1 || n == 2) return n;
-                         else return n * factorial(n - 1);
-                    };
-                    value = factorial(std::stoi(s));
+                    Number number{s};
+                    value = !number;
                     setAnswer(value);
                     ok = true;
                 }
@@ -379,22 +375,18 @@ bool MainWindow::parseParameter(QString const &entry){
     else if (auto wstr = entry.toStdWString(); wstr.find(L"π") != std::wstring::npos){
         auto r = std::wregex{ L"(\\d*\\.?\\d*)(π)" };
         auto match = std::wsmatch{};
+        std::string pi = "3.141592654";
         if (std::regex_match(wstr, match, r)) {
             if (auto s = match[1].str(); s.empty()){
-                value = M_PI;
+                value = Number{pi};
                 setAnswer(value);
-                ok = true;
             }
             else{
-                try{
-                    value = std::stof(s) * M_PI;
-                    setAnswer(value);
-                    ok = true;
-                }
-                catch(std::invalid_argument const&){
-                    showErrorMessage("Syntax Error");
-                }
+                std::string num = std::to_string(std::stof(s));
+                value = Number{num} * Number{pi};
+                setAnswer(value);
             }
+            ok = true;
         }
         else{
             showErrorMessage("Syntax Error");
@@ -402,29 +394,29 @@ bool MainWindow::parseParameter(QString const &entry){
     }
 
     //root function
-    else if (auto wstr = entry.toStdWString(); wstr.find(L"√") != std::wstring::npos){
-        auto r = std::wregex{ L"(\\d*\\.?\\d*)(√)(\\d+\\.?\\d*)" };
-        auto match = std::wsmatch{};
-        if (std::regex_match(wstr, match, r)) {
-            try{
-                auto s1{0.0}, s2{0.0};
-                if (match[1].str().empty())
-                    s1 = 2;
-                else
-                    s1 = std::stof(match[1].str());
-                s2 = std::stof(match[3].str());
-                value = std::pow(s2, (1/s1));
-                setAnswer(value);
-                ok = true;
-            }
-            catch (std::invalid_argument const&){
-                showErrorMessage("Syntax Error");
-            }
-        }
-        else{
-            showErrorMessage("Syntax Error");
-        }
-    }
+//    else if (auto wstr = entry.toStdWString(); wstr.find(L"√") != std::wstring::npos){
+//        auto r = std::wregex{ L"(\\d*\\.?\\d*)(√)(\\d+\\.?\\d*)" };
+//        auto match = std::wsmatch{};
+//        if (std::regex_match(wstr, match, r)) {
+//            try{
+//                auto s1{0.0}, s2{0.0};
+//                if (match[1].str().empty())
+//                    s1 = 2;
+//                else
+//                    s1 = std::stof(match[1].str());
+//                s2 = std::stof(match[3].str());
+//                //value = std::pow(s2, (1/s1));
+//                setAnswer(value);
+//                ok = true;
+//            }
+//            catch (std::invalid_argument const&){
+//                showErrorMessage("Syntax Error");
+//            }
+//        }
+//        else{
+//            showErrorMessage("Syntax Error");
+//        }
+//    }
 
     //trig function
     else{
@@ -433,14 +425,13 @@ bool MainWindow::parseParameter(QString const &entry){
     }
     //clear the entry if parsing the input failed
     if (!ok){
-
-    }
         ui->inputEntry->clear();
+    }
     return ok;
 }
 
 
-float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
+Number MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
     std::smatch match;
     auto str = entry.toStdString();
     unsigned counter{0};
@@ -451,19 +442,18 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
     });
 
     if (patternPosition != std::end(expectedPatterns)){
-        std::optional<float> s1;
+        std::optional<Number> s1;
         float s2{0.0};
         switch (counter){
         case 1:{
-            qDebug()<<std::size(match)<<"\n";
             try{
                 if (match[1].str().empty())
                     s1 = std::nullopt;
                 else
-                    s1 = std::stof(match[1].str());
+                    s1 = Number(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::sin([&s2](){return ((s2 * M_PI)/float(180));}());
+                return s1.value_or(Number("1")) * Number(QString::number(std::sin([&s2](){return ((s2 * M_PI)/float(180));}())).toStdString());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -478,10 +468,10 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 if (match[1].str().empty())
                     s1 = std::nullopt;
                 else
-                    s1 = std::stof(match[1].str());
+                    s1 = Number(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::cos([&s2](){return ((s2 * M_PI)/float(180));}());
+                return s1.value_or(Number("1")) * Number(QString::number(std::cos([&s2](){return ((s2 * M_PI)/float(180));}())).toStdString());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -496,10 +486,10 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 if (match[1].str().empty())
                     s1 = std::nullopt;
                 else
-                    s1 = std::stof(match[1].str());
+                    s1 = Number(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::tan([&s2](){return ((s2 * M_PI)/float(180));}());
+                return s1.value_or(Number("1")) * Number(QString::number(std::tan([&s2](){return ((s2 * M_PI)/float(180));}())).toStdString());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -514,10 +504,10 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 if (match[1].str().empty())
                     s1 = std::nullopt;
                 else
-                    s1 = std::stof(match[1].str());
+                    s1 = Number(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * [&s2](){ return (std::asin(s2) * 180) / M_PI;}();
+                return s1.value_or(Number("1")) * Number(QString::number([&s2](){ return (std::asin(s2) * 180) / M_PI;}()).toStdString());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -532,10 +522,10 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 if (match[1].str().empty())
                     s1 = std::nullopt;
                 else
-                    s1 = std::stof(match[1].str());
+                    s1 = Number(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * [&s2](){ return (std::acos(s2) * 180) / M_PI;}();
+                return s1.value_or(Number("1")) * Number(QString::number([&s2](){ return (std::acos(s2) * 180) / M_PI;}()).toStdString());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -550,10 +540,10 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 if (match[1].str().empty())
                     s1 = std::nullopt;
                 else
-                    s1 = std::stof(match[1].str());
+                    s1 = Number(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * [&s2](){ return (std::atan(s2) * 180) / M_PI;}();
+                return s1.value_or(Number("1")) * Number(QString::number([&s2](){ return (std::tan(s2) * 180) / M_PI;}()).toStdString());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -568,10 +558,10 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 if (match[1].str().empty())
                     s1 = std::nullopt;
                 else
-                    s1 = std::stof(match[1].str());
+                    s1 = Number(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::log10(s2);
+                return s1.value_or(Number("1")) * QString::number(std::log10(s2)).toStdString();
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -586,10 +576,10 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                 if (match[1].str().empty())
                     s1 = std::nullopt;
                 else
-                    s1 = std::stof(match[1].str());
+                    s1 = Number(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(1.0) * std::log(s2);
+                return s1.value_or(Number("1")) * QString::number(std::log(s2)).toStdString();
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -601,10 +591,8 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
             break;
         case 9:{
             try{
-                s1 = std::stof(match[1].str());
-                s2 = std::stof(match[3].str());
                 ok = true;
-                return std::pow(s1.value(), s2);
+                return Number(QString::number(std::pow(std::stof(match[1].str()), std::stof(match[3].str()))).toStdString());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -616,10 +604,8 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
             break;
         case 10:{
             try{
-                s1 = std::stof(match[1].str());
-                s2 = std::stof(match[3].str());
                 ok = true;
-                return std::pow(s1.value(), s2);
+                return Number(QString::number(std::pow(std::stof(match[1].str()), std::stof(match[3].str()))).toStdString());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -631,10 +617,11 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
             break;
         case 11:{
             try{
-                int s1 = std::stoi(match[1].str());
-                int s2 = std::stoi(match[3].str());
+                s1 = match[1].str();
+                Number s2 = QString::number(std::stoull(match[3].str())).toStdString();
                 ok = true;
-                return s1 ^ s2;
+                Number result = s1.value() ^ s2;
+                return result;
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -646,10 +633,11 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
             break;
         case 12:{
             try{
-                int s1 = std::stoi(match[1].str());
-                int s2 = std::stoi(match[3].str());
+                s1 = match[1].str();
+                Number s2 = QString::number(std::stoull(match[3].str())).toStdString();
                 ok = true;
-                return s1 | s2;
+                Number result = s1.value() | s2;
+                return result;
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -661,10 +649,11 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
             break;
         case 13:{
             try{
-                int s1 = std::stoi(match[1].str());
-                int s2 = std::stoi(match[3].str());
+                s1 = match[1].str();
+                Number s2 = QString::number(std::stoull(match[3].str())).toStdString();
                 ok = true;
-                return s1 & s2;
+                Number result = s1.value() & s2;
+                return result;
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -676,10 +665,11 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
             break;
         case 14:{
             try{
-                int s1 = std::stoi(match[1].str());
-                int s2 = std::stoi(match[3].str());
+                s1 = match[1].str();
+                Number s2 = QString::number(std::stoull(match[3].str())).toStdString();
                 ok = true;
-                return s1 << s2;
+                Number result = s1.value() << s2;
+                return result;
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -691,10 +681,11 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
             break;
         case 15:{
             try{
-                int s1 = std::stoi(match[1].str());
-                int s2 = std::stoi(match[3].str());
+                s1 = match[1].str();
+                Number s2 = QString::number(std::stoull(match[3].str())).toStdString();
                 ok = true;
-                return s1 >> s2;
+                Number result = s1.value() >> s2;
+                return result;
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -702,27 +693,25 @@ float MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
             catch(std::exception const&){
                 showErrorMessage("Math ERROR");
             }
-        }
             break;
         }
+        }
     }
-    else{
-        showErrorMessage("Syntax Error");
-    }
-    return 0;
+    showErrorMessage("Syntax Error");
+    return "0";
 }
 
-void MainWindow::setAnswer(float const& value){
+void MainWindow::setAnswer(Number const& value){
     parameters.push_back(value);
     ++inputCounter;
     if (inputCounter==1){
-        currentAnswer = QString::number(parameters[0]);
+        currentAnswer = QString::fromStdString(parameters[0].GetValue());
     }
     else if (inputCounter==2){
-        currentAnswer = QString::number(solve(parameters[0], parameters[1], operation[0]));
+        currentAnswer = QString::fromStdString(solve(parameters[0], parameters[1], operation[0]).GetValue());
     }
     else if (inputCounter==3){
-        currentAnswer = QString::number(solve(parameters[0], parameters[1], parameters[2], operation[0], operation[1]));
+        currentAnswer = QString::fromStdString(solve(parameters[0], parameters[1], parameters[2], operation[0], operation[1]).GetValue());
         //update the state of the parameters using BODMAS
         //parameters and operation cannot have a size greater than 3
         //if the operator precedence is ascending:
@@ -738,7 +727,7 @@ void MainWindow::setAnswer(float const& value){
             if (operation[1] == "*")
                 parameters[1] = parameters[1] * parameters[2];
             else if (operation[1] == "/")
-                parameters[1] = parameters[1] / float(parameters[2]);
+                parameters[1] = parameters[1] / parameters[2];
             operation.erase(std::begin(operation) + 1);
             parameters.erase(std::begin(parameters) + 2);
         }
@@ -746,28 +735,28 @@ void MainWindow::setAnswer(float const& value){
             if (operation[0] == "+") parameters[1] = parameters[0] + parameters[1];
             else if (operation[0] == "-") parameters[1] = parameters[0] - parameters[1];
             else if (operation[0] == "*") parameters[1] = parameters[0] * parameters[1];
-            else parameters[1] = parameters[0] / float(parameters[1]);
+            else parameters[1] = parameters[0] / parameters[1];
             parameters.pop_front();
             operation.pop_front();
         }
         --inputCounter;
     }
     ui->answerLabel->setText(currentAnswer);
-    numberSystem.setNumber(currentAnswer.toDouble());
+    numberSystem.setValue(currentAnswer.toStdString());
     ui->decResult->setText(currentAnswer);
     ui->hexResult->setText(QString::fromStdString(numberSystem.hexNotation()));
     ui->octResult->setText(QString::fromStdString(numberSystem.octalNotation()));
     ui->binResult->setText(QString::fromStdString(numberSystem.binaryNotation()));
 }
 
-float MainWindow::solve(float const& a, float const& b, QString& op1){
+Number MainWindow::solve(Number a, Number b, QString& op1){
     if (op1 == "+") return a + b;
     else if (op1 == "-") return a - b;
     else if (op1 == "*") return a * b;
-    else return a / float(b);
+    else return a / b;
 }
 
-float MainWindow::solve(float const& a, float const& b, float const& c, QString& op1, QString& op2){
+Number MainWindow::solve(Number a, Number b, Number c, QString& op1, QString& op2){
     if ((op1 == "+" || op1 == "-") && (op2 == "*" || op2 == "/"))
         return solve(a, solve(b, c, op2), op1);
     else

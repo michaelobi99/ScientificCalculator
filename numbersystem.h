@@ -5,17 +5,19 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <charconv>
 #include <string_view>
 #include <string>
 #include <optional>
 #include <unordered_map>
+#include <tuple>
 
 namespace stl {
-class NumberSystem
+    class NumberSystem
     {
     public:
         NumberSystem() = default;
-        void setNumber(double const&);
+        void setValue(std::string const&);
         [[nodiscard]] std::string binaryNotation();
         [[nodiscard]] std::string octalNotation();
         [[nodiscard]] std::string hexNotation();
@@ -24,13 +26,11 @@ class NumberSystem
         [[nodiscard]] std::string decToBinary();
         [[nodiscard]] std::string fractionalPartToBinary(double const&);
         [[nodiscard]] std::string decToOct();
-        [[nodiscard]] std::string fractionalPartToOctal(double const&);
         [[nodiscard]] std::string decToHex();
-        double decimalNumber{ 0 };
+        std::string decimalNumber{""};
         std::string binaryNumber{ "" };
         std::string octalNumber{ "" };
         std::string hexNumber{ "" };
     };
 }
-
 #endif // NUMBERSYSTEM_H
