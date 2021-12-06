@@ -77,25 +77,27 @@ Number Number::operator+ (Number const& otherNumber) {
             decimalPart = m_number.number.substr(radixPosition1 + 1, std::size(m_number.number) - (radixPosition1 + 1));
         }
         else {
-            radixPosition1 = 0;
+            radixPosition1 = std::size(m_number.number);
             integerPart = m_number.number;
             decimalPart = "0";
         }
         if (m_otherNumber.number.find('.') != std::string::npos) {
             otherIntegerPart = m_otherNumber.number.substr(0, radixPosition2);
-            otherDecimalPart = m_otherNumber.number.substr(radixPosition2 + 1, std::size(m_number.number) - (radixPosition2 + 1));
+            otherDecimalPart = m_otherNumber.number.substr(radixPosition2 + 1, std::size(m_otherNumber.number) - (radixPosition2 + 1));
         }
         else {
-            radixPosition2 = 0;
+            radixPosition2 = std::size(m_otherNumber.number);
             otherIntegerPart = m_otherNumber.number;
             otherDecimalPart = "0";
         }
         makeEqualLength(integerPart, otherIntegerPart);
         makeEqualLength(decimalPart, otherDecimalPart, true);
         size_t newRadixPosition = radixPosition1 > radixPosition2 ? radixPosition1 : radixPosition2;
-        std::string result = add(integerPart+decimalPart, otherIntegerPart+otherDecimalPart);
+        Number num1 = integerPart + decimalPart;
+        Number num2 = otherIntegerPart + otherDecimalPart;
+        std::string result = (num1 + num2).number;
         result.insert(newRadixPosition, ".");
-        return Number{ stripResult(result) };
+        return Number{ result };
     }
 }
 
@@ -130,27 +132,27 @@ Number Number::operator- (Number const& otherNumber) {
             decimalPart = m_number.number.substr(radixPosition1 + 1, std::size(m_number.number) - (radixPosition1 + 1));
         }
         else {
-            radixPosition1 = 0;
+            radixPosition1 = std::size(m_number.number);
             integerPart = m_number.number;
             decimalPart = "0";
         }
         if (m_otherNumber.number.find('.') != std::string::npos) {
             otherIntegerPart = m_otherNumber.number.substr(0, radixPosition2);
-            otherDecimalPart = m_otherNumber.number.substr(radixPosition2 + 1, std::size(m_number.number) - (radixPosition2 + 1));
+            otherDecimalPart = m_otherNumber.number.substr(radixPosition2 + 1, std::size(m_otherNumber.number) - (radixPosition2 + 1));
         }
         else {
-            radixPosition2 = 0;
+            radixPosition2 = std::size(m_otherNumber.number);
             otherIntegerPart = m_otherNumber.number;
             otherDecimalPart = "0";
         }
         makeEqualLength(integerPart, otherIntegerPart);
-        makeEqualLength(decimalPart, otherDecimalPart, true);
+        makeEqualLength(decimalPart, otherDecimalPart, true);//true is used to indiate that is a decimal being normalized
         size_t newRadixPosition = radixPosition1 > radixPosition2 ? radixPosition1 : radixPosition2;
         Number num1 = integerPart + decimalPart;
         Number num2 = otherIntegerPart + otherDecimalPart;
         std::string result = (num1 - num2).number;
-        result.insert(newRadixPosition + 1, ".");
-        return Number{ stripResult(result) };
+        result.insert(newRadixPosition, ".");
+        return Number{ result };
     }
 }
 
@@ -200,7 +202,6 @@ std::string Number::divide(std::string const& denominator) {
     else if (radixPosition1 != std::string::npos && radixPosition2 != std::string::npos){
         radixPosition1 = std::size(numerator) - (radixPosition1 + 1);
         radixPosition2 = std::size(tempDenominator) - (radixPosition2 + 1);
-        std::cout << radixPosition1 << "->" << radixPosition2 << "\n";
         if (radixPosition1 > radixPosition2) {
             distance = radixPosition1 - radixPosition2;
             for (auto i{ 0u }; i < distance; ++i)
@@ -219,7 +220,6 @@ std::string Number::divide(std::string const& denominator) {
             tempDenominator.erase(std::begin(tempDenominator) + tempDenominator.find('.'));
             numerator.erase(std::begin(numerator) + numerator.find('.'));
         }
-        std::cout << numerator << "/" << tempDenominator << "\n";
     }
     //division algorithm
     std::string answer{ "" };

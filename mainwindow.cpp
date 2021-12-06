@@ -394,29 +394,29 @@ bool MainWindow::parseParameter(QString const &entry){
     }
 
     //root function
-//    else if (auto wstr = entry.toStdWString(); wstr.find(L"√") != std::wstring::npos){
-//        auto r = std::wregex{ L"(\\d*\\.?\\d*)(√)(\\d+\\.?\\d*)" };
-//        auto match = std::wsmatch{};
-//        if (std::regex_match(wstr, match, r)) {
-//            try{
-//                auto s1{0.0}, s2{0.0};
-//                if (match[1].str().empty())
-//                    s1 = 2;
-//                else
-//                    s1 = std::stof(match[1].str());
-//                s2 = std::stof(match[3].str());
-//                //value = std::pow(s2, (1/s1));
-//                setAnswer(value);
-//                ok = true;
-//            }
-//            catch (std::invalid_argument const&){
-//                showErrorMessage("Syntax Error");
-//            }
-//        }
-//        else{
-//            showErrorMessage("Syntax Error");
-//        }
-//    }
+    else if (auto wstr = entry.toStdWString(); wstr.find(L"√") != std::wstring::npos){
+        auto r = std::wregex{ L"(\\d*\\.?\\d*)(√)(\\d+\\.?\\d*)" };
+        auto match = std::wsmatch{};
+        if (std::regex_match(wstr, match, r)) {
+            try{
+                auto s1{0.0}, s2{0.0};
+                if (match[1].str().empty())
+                    s1 = 2;
+                else
+                    s1 = std::stof(match[1].str());
+                s2 = std::stof(match[3].str());
+                value = std::to_string(std::pow(s2, (1/s1)));
+                setAnswer(value);
+                ok = true;
+            }
+            catch (std::invalid_argument const&){
+                showErrorMessage("Syntax Error");
+            }
+        }
+        else{
+            showErrorMessage("Syntax Error");
+        }
+    }
 
     //trig function
     else{
