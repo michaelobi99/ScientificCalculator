@@ -3,7 +3,17 @@
 using namespace stl;
 
 void NumberSystem::setValue(std::string const& num) {
-    decimalNumber = num;
+    bool isParseable{ true };
+    for (const auto& elem : num) {
+        if ((!isdigit(elem)) && (elem != '.') && (elem != '-')) {
+            isParseable = false;
+            break;
+        }
+    }
+    if (isParseable)
+        decimalNumber = num;
+    else
+        decimalNumber = "0";
     binaryNumber = decToBinary();
     octalNumber = decToOct();
     hexNumber = decToHex();

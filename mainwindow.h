@@ -26,7 +26,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     void connectButtonSignals(Ui::MainWindow*);
-    void setButtonClickedColor(Ui::MainWindow*);
+    //void setButtonClickedColor(Ui::MainWindow*);
     ~MainWindow();
 
 public slots:

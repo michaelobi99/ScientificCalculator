@@ -12,13 +12,6 @@ Number::Number(const char* str) {
 
 Number::Number(std::string const& str) : Number(str.c_str()) {}
 
-Number::Number(std::wstring const& str){
-    std::string tempStr;
-    for (auto const& elem : str)
-        tempStr += elem;
-    Number(tempStr.c_str());
-}
-
 Number::Number(const Number& otherObject) : Number(otherObject.number.c_str()) {}
 
 std::string Number::GetValue() const {
@@ -31,7 +24,7 @@ void Number::makeEqualLength(std::string& number1, std::string& number2, bool re
     //i.e the zeroes are added at the beginning
     //else it is true
     //i.e the zeroes are added at the end
-    long int diff = std::labs(std::size(number1) - std::size(number2));
+    unsigned diff = std::labs(std::size(number1) - std::size(number2));
     std::string tempInteger(diff, '0');
     if (std::size(number1) > std::size(number2)) {
         if (reverse)
@@ -388,18 +381,16 @@ Number Number::operator>> (Number const& other) {
     unsigned long long result = num1 >> num2;
     return Number{ std::to_string(result) };
 }
-
 Number Number::operator!() {
-    std::function<Number(Number)> factorial = [&factorial](Number n)->Number{
-        if (n == Number{ "0" }) return Number{ "1" };
-        if (n == Number{ "1" } || n == Number{ "2" }) return n;
-        else {
-            auto one = Number{ "1" };
-            Number next = n - one;
-            return n * factorial(next);
-        }
-    };
-    return factorial(*this);
+    std::uint32_t numAsInt = std::stoul(this->number);
+    std::vector<Number> numbers(numAsInt);
+    uint32_t n = 1;
+    std::function<Number(Number, Number)> multiplies = [](Number a, Number b) {return a * b; };
+    std::for_each(std::begin(numbers), std::end(numbers), [&n](Number& elem) {
+        elem = Number{ std::to_string(n) };
+        ++n;
+        });
+    return std::accumulate(std::begin(numbers), std::end(numbers), Number{ "1" }, multiplies);
 }
 
 const Number Number::operator= (const Number& otherInteger) {

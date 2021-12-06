@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     inputValidator();
     connectButtonSignals(ui);
-    setButtonClickedColor(ui);
+    //setButtonClickedColor(ui);
 }
 
 void MainWindow::inputValidator(){
@@ -68,48 +68,48 @@ void MainWindow::connectButtonSignals(Ui::MainWindow *ui){
     QObject::connect(ui->inputEntry, &QLineEdit::editingFinished, this, &MainWindow::mathOperatorButtonClicked);
 }
 
-void MainWindow::setButtonClickedColor(Ui::MainWindow*){
-    ui->zeroButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->oneButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->twoButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->threeButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->fourButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->fiveButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->sixButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->sevenButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->eightButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->nineButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->plusButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->minusButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->timesButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->divideButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->equalToButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->piButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->radixPointButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->answerButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->deleteButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->resetButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->openBracesButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->closeBracesButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->sineButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->cosineButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->tangentButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->logButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->naturalLogButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->inverseSinButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->inverseCosButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->inverseTanButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->exponentButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->squareButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->rootButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->factorialButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->complexNumberButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->bitORButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->bitANDButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->bitXORButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->leftShiftButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-    ui->rightShiftButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
-}
+//void MainWindow::setButtonClickedColor(Ui::MainWindow*){
+//    ui->zeroButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->oneButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->twoButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->threeButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->fourButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->fiveButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->sixButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->sevenButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->eightButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->nineButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->plusButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->minusButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->timesButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->divideButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->equalToButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->piButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->radixPointButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->answerButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->deleteButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->resetButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->openBracesButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->closeBracesButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->sineButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->cosineButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->tangentButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->logButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->naturalLogButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->inverseSinButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->inverseCosButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->inverseTanButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->exponentButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->squareButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->rootButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->factorialButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->complexNumberButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->bitORButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->bitANDButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->bitXORButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->leftShiftButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//    ui->rightShiftButton->setStyleSheet("QPushButton:pressed{background-color: gray}");
+//}
 
 void MainWindow::mathOperatorButtonClicked(){
     ui->userInputEntry->setText(asString(inputList));
@@ -740,6 +740,14 @@ void MainWindow::setAnswer(Number const& value){
             operation.pop_front();
         }
         --inputCounter;
+    }
+    std::string result{currentAnswer.toStdString()};
+    if (result.size() > 45){
+        size_t s = result.size();
+        result = result.substr(0, 25);
+        result.insert(1, ".");
+        result += "e+" + std::to_string(s-1);
+        currentAnswer = QString::fromStdString(result);
     }
     ui->answerLabel->setText(currentAnswer);
     numberSystem.setValue(currentAnswer.toStdString());
