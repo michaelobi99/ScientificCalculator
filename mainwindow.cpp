@@ -561,7 +561,7 @@ Number MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                     s1 = Number(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(Number("1")) * QString::number(std::log10(s2)).toStdString();
+                return s1.value_or(Number("1")) * Number(QString::number(std::log10(s2)).toStdString());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -579,7 +579,7 @@ Number MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
                     s1 = Number(match[1].str());
                 s2 = std::stof(match[3].str());
                 ok = true;
-                return s1.value_or(Number("1")) * QString::number(std::log(s2)).toStdString();
+                return s1.value_or(Number("1")) * Number(QString::number(std::log(s2)).toStdString());
             }
             catch(std::invalid_argument const&){
                 showErrorMessage("Syntax ERROR");
@@ -744,7 +744,7 @@ void MainWindow::setAnswer(Number const& value){
     std::string result{currentAnswer.toStdString()};
     if (result.size() > 45){
         size_t s = result.size();
-        result = result.substr(0, 25);
+        result = result.substr(0, 30);
         result.insert(1, ".");
         result += "e+" + std::to_string(s-1);
         currentAnswer = QString::fromStdString(result);

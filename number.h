@@ -45,6 +45,8 @@ public:
     Number operator>> (Number const&);
     //.............................................................................
     bool operator== (const Number&);
+    bool operator!= (const Number&);
+    const Number operator= (Number&&);
     const Number operator= (const Number&);
 
 private:

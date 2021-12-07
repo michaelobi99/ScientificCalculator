@@ -351,54 +351,98 @@ std::string Number::multiply(std::string_view num1, std::string_view num2) {
 }
 
 Number Number::operator^(Number const& other) {
-    unsigned long long num1 = std::stoull(number);
-    unsigned long long num2 = std::stoull(other.number);
-    unsigned long long result = num1 ^ num2;
-    return Number{ std::to_string(result) };
+    try{
+        unsigned long long num1 = std::stoull(number);
+        unsigned long long num2 = std::stoull(other.number);
+        unsigned long long result = num1 ^ num2;
+        return Number{ std::to_string(result) };
+    }
+    catch(std::invalid_argument const&){
+        return Number{"0"};
+    }
 }
 Number Number::operator|(Number const& other) {
-    unsigned long long num1 = std::stoull(number);
-    unsigned long long num2 = std::stoull(other.number);
-    unsigned long long result = num1 | num2;
-    return Number{ std::to_string(result) };
+    try{
+        unsigned long long num1 = std::stoull(number);
+        unsigned long long num2 = std::stoull(other.number);
+        unsigned long long result = num1 | num2;
+        return Number{ std::to_string(result) };
+    }
+    catch(std::invalid_argument const&){
+        return Number{"0"};
+    }
+
 }
 Number Number::operator&(Number const& other) {
-    unsigned long long num1 = std::stoull(number);
-    unsigned long long num2 = std::stoull(other.number);
-    unsigned long long result = num1 & num2;
-    return Number{ std::to_string(result) };
+    try{
+        unsigned long long num1 = std::stoull(number);
+        unsigned long long num2 = std::stoull(other.number);
+        unsigned long long result = num1 & num2;
+        return Number{ std::to_string(result) };
+    }
+    catch(std::invalid_argument const&){
+        return Number{"0"};
+    }
+
 }
 Number Number::operator<< (Number const& other) {
-    unsigned long long num1 = std::stoull(number);
-    unsigned long long num2 = std::stoull(other.number);
-    unsigned long long result = num1 << num2;
-    return Number{ std::to_string(result) };
+    try{
+        unsigned long long num1 = std::stoull(number);
+        unsigned long long num2 = std::stoull(other.number);
+        unsigned long long result = num1 << num2;
+        return Number{ std::to_string(result) };
+    }
+    catch(std::invalid_argument const&){
+        return Number{"0"};
+    }
 }
 
 Number Number::operator>> (Number const& other) {
-    unsigned long long num1 = std::stoull(number);
-    unsigned long long num2 = std::stoull(other.number);
-    unsigned long long result = num1 >> num2;
-    return Number{ std::to_string(result) };
+    try{
+        unsigned long long num1 = std::stoull(number);
+        unsigned long long num2 = std::stoull(other.number);
+        unsigned long long result = num1 >> num2;
+        return Number{ std::to_string(result) };
+    }
+    catch(std::invalid_argument const&){
+        return Number{"0"};
+    }
 }
 Number Number::operator!() {
-    std::uint32_t numAsInt = std::stoul(this->number);
-    std::vector<Number> numbers(numAsInt);
-    uint32_t n = 1;
-    std::function<Number(Number, Number)> multiplies = [](Number a, Number b) {return a * b; };
-    std::for_each(std::begin(numbers), std::end(numbers), [&n](Number& elem) {
-        elem = Number{ std::to_string(n) };
-        ++n;
-        });
-    return std::accumulate(std::begin(numbers), std::end(numbers), Number{ "1" }, multiplies);
+    try{
+        std::uint32_t numAsInt = std::stoul(this->number);
+        std::vector<Number> numbers(numAsInt);
+        uint32_t n = 1;
+        std::function<Number(Number, Number)> multiplies = [](Number a, Number b) {return a * b; };
+        std::for_each(std::begin(numbers), std::end(numbers), [&n](Number& elem) {
+            elem = Number{ std::to_string(n) };
+            ++n;
+            });
+        return std::accumulate(std::begin(numbers), std::end(numbers), Number{ "1" }, multiplies);
+    }
+    catch (std::invalid_argument const&){
+        return Number{"0"};
+    }
+
 }
 
 const Number Number::operator= (const Number& otherInteger) {
-    number.clear();
-    number = otherInteger.number;
+    if (*this != otherInteger){
+        number.clear();
+        number = otherInteger.number;
+    }
+    return *this;
+}
+
+const Number Number::operator= (Number&& otherInteger){
+    this->number = std::exchange(otherInteger.number, "0");
     return *this;
 }
 
 bool Number::operator== (const Number& otherInteger) {
     return (this->number == otherInteger.number) ? true : false;
+}
+
+bool Number::operator!= (const Number& otherInteger) {
+    return !(this->number == otherInteger.number) ? true : false;
 }
