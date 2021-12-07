@@ -589,19 +589,7 @@ Number MainWindow::parseTrigOrLogInput(QString const& entry, bool& ok){
             }
         }
             break;
-        case 9:{
-            try{
-                ok = true;
-                return Number(QString::number(std::pow(std::stof(match[1].str()), std::stof(match[3].str()))).toStdString());
-            }
-            catch(std::invalid_argument const&){
-                showErrorMessage("Syntax ERROR");
-            }
-            catch(std::exception const&){
-                showErrorMessage("Math ERROR");
-            }
-        }
-            break;
+        case 9:
         case 10:{
             try{
                 ok = true;

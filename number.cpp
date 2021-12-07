@@ -8,6 +8,7 @@ Number::Number(const char* str) {
     for (const auto& elem : str1) {
         (!isdigit(elem)) && (elem != '.') && (elem != '-') ? throw Number::InvalidValue(str) : number += elem;
     }
+    number = stripResult(number);
 }
 
 Number::Number(std::string const& str) : Number(str.c_str()) {}
@@ -61,7 +62,7 @@ Number Number::operator+ (Number const& otherNumber) {
     if (radixPosition1 == std::string::npos && radixPosition2 == std::string::npos) {
         makeEqualLength(m_number.number, m_otherNumber.number);
         auto result = add(m_number.number, m_otherNumber.number);
-        return Number(stripResult(result));
+        return Number(result);
     }
     else {
         std::string integerPart, decimalPart, otherIntegerPart, otherDecimalPart;
@@ -101,10 +102,10 @@ Number Number::operator- (Number const& otherNumber) {
     if (radixPosition1 == std::string::npos && radixPosition2 == std::string::npos) {
         makeEqualLength(m_number.number, m_otherNumber.number);
         if (std::size(m_number.number) > std::size(m_otherNumber.number)) {
-            return Number(stripResult(subtract(m_number.number, m_otherNumber.number)));
+            return Number(subtract(m_number.number, m_otherNumber.number));
         }
         else if (std::size(m_number.number) < std::size(m_otherNumber.number)) {
-            return Number(("-" + stripResult(subtract(m_otherNumber.number, m_number.number))));
+            return Number(("-" + subtract(m_otherNumber.number, m_number.number)));
         }
         else {
             auto length = std::size(m_number.number);
@@ -112,7 +113,7 @@ Number Number::operator- (Number const& otherNumber) {
                 if (m_number.number.at(i) > m_otherNumber.number.at(i))
                     return Number(stripResult(subtract(m_number.number, m_otherNumber.number)));
                 else if (m_number.number.at(i) < m_otherNumber.number.at(i))
-                    return Number(("-" + stripResult(subtract(m_otherNumber.number, m_number.number))));
+                    return Number(("-" + subtract(m_otherNumber.number, m_number.number)));
                 else
                     continue;
             }
@@ -166,7 +167,7 @@ Number Number::operator* (Number const& otherNumber) {
     if (newRadixPosition != 0)
         result.insert(std::distance(std::begin(result) + newRadixPosition, std::end(result)), ".");
 
-    return Number{ stripResult(result) };
+    return Number{result};
 }
 
 Number Number::operator/ (Number const& otherNumber) {
@@ -440,9 +441,9 @@ const Number Number::operator= (Number&& otherInteger){
 }
 
 bool Number::operator== (const Number& otherInteger) {
-    return (this->number == otherInteger.number) ? true : false;
+    return this->number == otherInteger.number;
 }
 
 bool Number::operator!= (const Number& otherInteger) {
-    return !(this->number == otherInteger.number) ? true : false;
+    return !(this->number == otherInteger.number);
 }
