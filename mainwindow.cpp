@@ -730,7 +730,7 @@ void MainWindow::setAnswer(Number const& value){
         --inputCounter;
     }
     std::string result{currentAnswer.toStdString()};
-    if (result.size() > 45){
+    if (result.size() > 50){
         size_t s = result.size();
         result = result.substr(0, 30);
         result.insert(1, ".");

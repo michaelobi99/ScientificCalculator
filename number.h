@@ -9,6 +9,7 @@
 #include <numeric>
 #include <string_view>
 #include <functional>
+#include "parallel_accumulate.h"
 using namespace std::literals::string_view_literals;
 //class to handle big numbers that cant be handled by the standard types
 class Number {
@@ -28,7 +29,6 @@ public:
     Number();
     Number(const char*);
     Number(std::string const&);
-    Number(std::wstring const&);
     Number(Number const &);
     std::string GetValue() const;
     //overloading the math operators

@@ -8,18 +8,17 @@ Number::Number(const char* str) {
     for (const auto& elem : str1) {
         (!isdigit(elem)) && (elem != '.') && (elem != '-') ? throw Number::InvalidValue(str) : number += elem;
     }
-    number = stripResult(number);
 }
 
 Number::Number(std::string const& str) : Number(str.c_str()) {}
 
-Number::Number(const Number& otherObject) : Number(otherObject.number.c_str()) {}
+Number::Number(const Number & otherObject) : Number(otherObject.number.c_str()) {}
 
 std::string Number::GetValue() const {
     return number;
 }
 
-void Number::makeEqualLength(std::string& number1, std::string& number2, bool reverse = false) {
+void Number::makeEqualLength(std::string & number1, std::string & number2, bool reverse = false) {
     //reverse flag is used to indicate what part of the radix point we are making equal
     //if its the integer part, reverse is false
     //i.e the zeroes are added at the beginning
@@ -62,7 +61,7 @@ Number Number::operator+ (Number const& otherNumber) {
     if (radixPosition1 == std::string::npos && radixPosition2 == std::string::npos) {
         makeEqualLength(m_number.number, m_otherNumber.number);
         auto result = add(m_number.number, m_otherNumber.number);
-        return Number(result);
+        return Number(stripResult(result));
     }
     else {
         std::string integerPart, decimalPart, otherIntegerPart, otherDecimalPart;
@@ -102,10 +101,10 @@ Number Number::operator- (Number const& otherNumber) {
     if (radixPosition1 == std::string::npos && radixPosition2 == std::string::npos) {
         makeEqualLength(m_number.number, m_otherNumber.number);
         if (std::size(m_number.number) > std::size(m_otherNumber.number)) {
-            return Number(subtract(m_number.number, m_otherNumber.number));
+            return Number(stripResult(subtract(m_number.number, m_otherNumber.number)));
         }
         else if (std::size(m_number.number) < std::size(m_otherNumber.number)) {
-            return Number(("-" + subtract(m_otherNumber.number, m_number.number)));
+            return Number(("-" + stripResult(subtract(m_otherNumber.number, m_number.number))));
         }
         else {
             auto length = std::size(m_number.number);
@@ -113,7 +112,7 @@ Number Number::operator- (Number const& otherNumber) {
                 if (m_number.number.at(i) > m_otherNumber.number.at(i))
                     return Number(stripResult(subtract(m_number.number, m_otherNumber.number)));
                 else if (m_number.number.at(i) < m_otherNumber.number.at(i))
-                    return Number(("-" + subtract(m_otherNumber.number, m_number.number)));
+                    return Number(("-" + stripResult(subtract(m_otherNumber.number, m_number.number))));
                 else
                     continue;
             }
@@ -152,7 +151,7 @@ Number Number::operator- (Number const& otherNumber) {
 
 //multitplication
 Number Number::operator* (Number const& otherNumber) {
-    Number m_number{*this}, m_otherNumber{otherNumber};
+    Number m_number{ *this }, m_otherNumber{ otherNumber };
     auto [radixPosition1, radixPosition2] = std::tuple(m_number.number.find('.'), m_otherNumber.number.find('.'));
     std::size_t newRadixPosition{ 0 };
     if (radixPosition1 != std::string::npos) {
@@ -167,7 +166,7 @@ Number Number::operator* (Number const& otherNumber) {
     if (newRadixPosition != 0)
         result.insert(std::distance(std::begin(result) + newRadixPosition, std::end(result)), ".");
 
-    return Number{result};
+    return Number{ stripResult(result) };
 }
 
 Number Number::operator/ (Number const& otherNumber) {
@@ -193,7 +192,7 @@ std::string Number::divide(std::string const& denominator) {
             tempDenominator.push_back('0');
         numerator.erase(std::begin(numerator) + radixPosition1);
     }
-    else if (radixPosition1 != std::string::npos && radixPosition2 != std::string::npos){
+    else if (radixPosition1 != std::string::npos && radixPosition2 != std::string::npos) {
         radixPosition1 = std::size(numerator) - (radixPosition1 + 1);
         radixPosition2 = std::size(tempDenominator) - (radixPosition2 + 1);
         if (radixPosition1 > radixPosition2) {
@@ -250,10 +249,9 @@ std::string Number::divide(std::string const& denominator) {
 std::string Number::add(std::string_view num1, std::string_view num2) {
     std::string tempAns;
     std::uint32_t arguend{ 0 }, addend{ 0 }, sum{ 0 }, remainder{ 0 };
-    std::vector<char> num1AsVec,
-        num2AsVec;
-    for (const auto& elem : num1) num1AsVec.push_back(elem);
-    for (const auto& elem : num2) num2AsVec.push_back(elem);
+    std::vector<char> num1AsVec(std::size(num1)), num2AsVec(std::size(num2));
+    std::copy(std::begin(num1), std::end(num1), std::begin(num1AsVec));
+    std::copy(std::begin(num2), std::end(num2), std::begin(num2AsVec));
     auto [iter1, iter2] = std::pair(num1AsVec.crbegin(), num2AsVec.crbegin());
     for (; iter1 != num1AsVec.crend() && iter2 != num2AsVec.crend(); ++iter1, ++iter2) {
         arguend = numString.find(*iter1);
@@ -275,9 +273,10 @@ std::string Number::add(std::string_view num1, std::string_view num2) {
 std::string Number::subtract(std::string_view num1, std::string_view num2) {
     std::string tempAns;
     std::uint32_t minuend{ 0 }, subtrahend{ 0 }, difference{ 0 };
-    std::vector<char> num1AsVec, num2AsVec;
-    for (const auto& elem : num1) num1AsVec.push_back(elem);
-    for (const auto& elem : num2) num2AsVec.push_back(elem);
+    std::vector<char> num1AsVec(std::size(num1)), num2AsVec(std::size(num2));
+    std::copy(std::begin(num1), std::end(num1), std::begin(num1AsVec));
+    std::copy(std::begin(num2), std::end(num2), std::begin(num2AsVec));
+
     auto [iter1, iter2] = std::pair(num1AsVec.rbegin(), num2AsVec.rbegin());
     for (; iter1 != num1AsVec.rend() && iter2 != num2AsVec.rend(); ++iter1, ++iter2) {
         minuend = numString.find(*iter1);
@@ -320,8 +319,8 @@ std::string Number::subtract(std::string_view num1, std::string_view num2) {
 
 std::string Number::multiply(std::string_view num1, std::string_view num2) {
     std::vector<char> multiplicand(std::size(num1)), multiplier(std::size(num2));
-    for (size_t i{ 0 }; i < std::size(num1); ++i) multiplicand[i] = num1[i];
-    for (size_t i{ 0 }; i < std::size(num2); ++i) multiplier[i] = num2[i];
+    std::copy(std::begin(num1), std::end(num1), std::begin(multiplicand));
+    std::copy(std::begin(num2), std::end(num2), std::begin(multiplier));
     std::vector<std::string> product;
     auto result = 0, remainder = 0;
     std::string eachAns;
@@ -347,103 +346,103 @@ std::string Number::multiply(std::string_view num1, std::string_view num2) {
     //creaates a vector of Integer objects from each row of products
     for (size_t i{ 0 }; i < std::size(product); ++i)
         numbersToAdd[i] = Number(product[i].c_str());
-    auto sumOfProducts = std::accumulate(numbersToAdd.begin(), numbersToAdd.end(), Number("0"));//love this line
+    auto sumOfProducts = stl::parallel_accumulate(numbersToAdd.begin(), numbersToAdd.end(), Number("0"));//love this line
     return sumOfProducts.number;
 }
 
 Number Number::operator^(Number const& other) {
-    try{
+    try {
         unsigned long long num1 = std::stoull(number);
         unsigned long long num2 = std::stoull(other.number);
         unsigned long long result = num1 ^ num2;
         return Number{ std::to_string(result) };
     }
-    catch(std::invalid_argument const&){
-        return Number{"0"};
+    catch (std::exception const&) {
+        return Number{ "0" };
     }
 }
 Number Number::operator|(Number const& other) {
-    try{
+    try {
         unsigned long long num1 = std::stoull(number);
         unsigned long long num2 = std::stoull(other.number);
         unsigned long long result = num1 | num2;
         return Number{ std::to_string(result) };
     }
-    catch(std::invalid_argument const&){
-        return Number{"0"};
+    catch (std::exception const&) {
+        return Number{ "0" };
     }
-
 }
 Number Number::operator&(Number const& other) {
-    try{
+    try {
         unsigned long long num1 = std::stoull(number);
         unsigned long long num2 = std::stoull(other.number);
         unsigned long long result = num1 & num2;
         return Number{ std::to_string(result) };
     }
-    catch(std::invalid_argument const&){
-        return Number{"0"};
+    catch (std::exception const&) {
+        return Number{ "0" };
     }
 
 }
 Number Number::operator<< (Number const& other) {
-    try{
+    try {
         unsigned long long num1 = std::stoull(number);
         unsigned long long num2 = std::stoull(other.number);
         unsigned long long result = num1 << num2;
         return Number{ std::to_string(result) };
     }
-    catch(std::invalid_argument const&){
-        return Number{"0"};
+    catch (std::exception const&) {
+        return Number{ "0" };
     }
 }
 
 Number Number::operator>> (Number const& other) {
-    try{
+    try {
         unsigned long long num1 = std::stoull(number);
         unsigned long long num2 = std::stoull(other.number);
         unsigned long long result = num1 >> num2;
         return Number{ std::to_string(result) };
     }
-    catch(std::invalid_argument const&){
-        return Number{"0"};
+    catch (std::exception const&) {
+        return Number{ "0" };
     }
 }
 Number Number::operator!() {
-    try{
+    try {
         std::uint32_t numAsInt = std::stoul(this->number);
         std::vector<Number> numbers(numAsInt);
         uint32_t n = 1;
+        Number result{};
         std::function<Number(Number, Number)> multiplies = [](Number a, Number b) {return a * b; };
         std::for_each(std::begin(numbers), std::end(numbers), [&n](Number& elem) {
             elem = Number{ std::to_string(n) };
             ++n;
             });
-        return std::accumulate(std::begin(numbers), std::end(numbers), Number{ "1" }, multiplies);
+        result = stl::parallel_accumulate(std::begin(numbers), std::end(numbers), Number{ "1" }, multiplies);
+        return result;
     }
-    catch (std::invalid_argument const&){
-        return Number{"0"};
+    catch (std::exception const&) {
+        return Number{ "0" };
     }
-
 }
 
-const Number Number::operator= (const Number& otherInteger) {
-    if (*this != otherInteger){
+const Number Number::operator= (const Number & otherInteger) {
+    if (*this != otherInteger) {
         number.clear();
         number = otherInteger.number;
     }
     return *this;
 }
 
-const Number Number::operator= (Number&& otherInteger){
+const Number Number::operator= (Number && otherInteger) {
     this->number = std::exchange(otherInteger.number, "0");
     return *this;
 }
 
-bool Number::operator== (const Number& otherInteger) {
+bool Number::operator== (const Number & otherInteger) {
     return this->number == otherInteger.number;
 }
 
-bool Number::operator!= (const Number& otherInteger) {
+bool Number::operator!= (const Number & otherInteger) {
     return !(this->number == otherInteger.number);
 }

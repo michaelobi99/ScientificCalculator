@@ -17,7 +17,8 @@ SOURCES += \
 HEADERS += \
     mainwindow.h \
     number.h \
-    numbersystem.h
+    numbersystem.h \
+    parallel_accumulate.h
 
 FORMS += \
     mainwindow.ui
