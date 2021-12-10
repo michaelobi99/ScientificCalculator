@@ -99,23 +99,14 @@ Number Number::operator- (Number const& otherNumber) {
     Number m_number{ *this }, m_otherNumber{ otherNumber };
     auto [radixPosition1, radixPosition2] = std::tuple(m_number.number.find('.'), m_otherNumber.number.find('.'));
     if (radixPosition1 == std::string::npos && radixPosition2 == std::string::npos) {
-        makeEqualLength(m_number.number, m_otherNumber.number);
-        if (std::size(m_number.number) > std::size(m_otherNumber.number)) {
+        if (m_number.number > m_otherNumber.number) {
             return Number(stripResult(subtract(m_number.number, m_otherNumber.number)));
         }
-        else if (std::size(m_number.number) < std::size(m_otherNumber.number)) {
+        else if (m_number.number < m_otherNumber.number) {
             return Number(("-" + stripResult(subtract(m_otherNumber.number, m_number.number))));
         }
         else {
-            auto length = std::size(m_number.number);
-            for (size_t i{ 0 }; i < length; ++i) {
-                if (m_number.number.at(i) > m_otherNumber.number.at(i))
-                    return Number(stripResult(subtract(m_number.number, m_otherNumber.number)));
-                else if (m_number.number.at(i) < m_otherNumber.number.at(i))
-                    return Number(("-" + stripResult(subtract(m_otherNumber.number, m_number.number))));
-                else
-                    continue;
-            }
+            return Number{ "0" };
         }
     }
     else {
@@ -382,7 +373,6 @@ Number Number::operator&(Number const& other) {
     catch (std::exception const&) {
         return Number{ "0" };
     }
-
 }
 Number Number::operator<< (Number const& other) {
     try {
@@ -407,23 +397,14 @@ Number Number::operator>> (Number const& other) {
         return Number{ "0" };
     }
 }
-Number Number::operator!() {
-    try {
-        std::uint32_t numAsInt = std::stoul(this->number);
-        std::vector<Number> numbers(numAsInt);
-        uint32_t n = 1;
-        Number result{};
-        std::function<Number(Number, Number)> multiplies = [](Number a, Number b) {return a * b; };
-        std::for_each(std::begin(numbers), std::end(numbers), [&n](Number& elem) {
-            elem = Number{ std::to_string(n) };
-            ++n;
-            });
-        result = stl::parallel_accumulate(std::begin(numbers), std::end(numbers), Number{ "1" }, multiplies);
-        return result;
+
+Number Number::operator! () {
+    auto [result, one, zero, tempNumber] = std::tuple(Number{ "1" }, Number{ "1" }, Number{ "0" }, *this);
+    while (tempNumber > zero) {
+        result = result * tempNumber;
+        tempNumber = tempNumber - one;
     }
-    catch (std::exception const&) {
-        return Number{ "0" };
-    }
+    return result;
 }
 
 const Number Number::operator= (const Number & otherInteger) {
@@ -437,6 +418,14 @@ const Number Number::operator= (const Number & otherInteger) {
 const Number Number::operator= (Number && otherInteger) {
     this->number = std::exchange(otherInteger.number, "0");
     return *this;
+}
+
+bool Number::operator> (const Number& otherInteger) {
+    return this->number > otherInteger.number;
+}
+
+bool Number::operator< (const Number& otherInteger) {
+    return this->number < otherInteger.number;
 }
 
 bool Number::operator== (const Number & otherInteger) {

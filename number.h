@@ -6,7 +6,6 @@
 #include <vector>
 #include <algorithm>
 #include <tuple>
-#include <numeric>
 #include <string_view>
 #include <functional>
 #include "parallel_accumulate.h"
@@ -29,7 +28,8 @@ public:
     Number();
     Number(const char*);
     Number(std::string const&);
-    Number(Number const &);
+    Number(std::wstring const&);
+    Number(Number const&);
     std::string GetValue() const;
     //overloading the math operators
     Number operator+ (Number const&);
@@ -40,10 +40,13 @@ public:
     Number operator| (Number const&);
     Number operator& (Number const&);
     Number operator!();
+    Number operator()();
     //overloading the stream operators to represent right and left shift operations
     Number operator<< (Number const&);
     Number operator>> (Number const&);
     //.............................................................................
+    bool operator> (const Number&);
+    bool operator< (const Number&);
     bool operator== (const Number&);
     bool operator!= (const Number&);
     const Number operator= (Number&&);
@@ -59,6 +62,5 @@ private:
     std::string stripResult(std::string const&);
     void makeEqualLength(std::string&, std::string&, bool);
 };
-
 
 #endif // NUMBER_H
