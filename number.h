@@ -40,7 +40,6 @@ public:
     Number operator| (Number const&);
     Number operator& (Number const&);
     Number operator!();
-    Number operator()();
     //overloading the stream operators to represent right and left shift operations
     Number operator<< (Number const&);
     Number operator>> (Number const&);
@@ -58,7 +57,7 @@ private:
     std::string add(std::string_view, std::string_view);
     std::string subtract(std::string_view, std::string_view);
     std::string multiply(std::string_view, std::string_view);
-    std::string divide(std::string const&);
+    std::string divide(std::string const&, std::string const&);
     std::string stripResult(std::string const&);
     void makeEqualLength(std::string&, std::string&, bool);
 };
