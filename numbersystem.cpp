@@ -45,43 +45,47 @@ std::string NumberSystem::decToBinary() {
         integerPart = m_decimalNumber;
         decPart = std::nullopt;
     }
+    try{
+        std::string integerPartAsBinary{ "" }, decimalPartAsBinary{ "" };
+        if (decPart.has_value()) {
+            double result{ 0.0 };
+            //std::from_chars_result res = std::from_chars(decPart.value().data(), decPart.value().data() + decPart.value().size(), result);
+            result = std::stold(decPart.value());
+            decimalPartAsBinary = fractionalPartToBinary(result);
+        }
 
-    std::string integerPartAsBinary{ "" }, decimalPartAsBinary{ "" };
-    if (decPart.has_value()) {
-        double result{ 0.0 };
-        //std::from_chars_result res = std::from_chars(decPart.value().data(), decPart.value().data() + decPart.value().size(), result);
-        result = std::stold(decPart.value());
-        decimalPartAsBinary = fractionalPartToBinary(result);
+        ullType quotient{std::stoull(integerPart) }, remainder;
+
+        if (quotient == 0)
+            integerPartAsBinary = "0";
+
+        while (quotient > 0) {
+            remainder = quotient % 2;
+            quotient /= 2;
+            integerPartAsBinary += std::to_string(remainder);
+        }
+        std::reverse(std::begin(integerPartAsBinary), std::end(integerPartAsBinary));
+        std::string prefix1((4 - (std::size(integerPartAsBinary) % 4)), '0');//for hex form
+
+        if (std::size(prefix1) < 4)
+            integerPartAsBinary = prefix1 + integerPartAsBinary;
+
+        std::string answer{ "" };
+        for (std::size_t i{ 0 }; i < std::size(integerPartAsBinary); ++i) {
+            if (i % 4 == 0 && i != 0)
+                answer += ' ';
+            answer += integerPartAsBinary[i];
+        }
+        if (decPart.has_value())
+            answer = answer + '.' + decimalPartAsBinary;
+        if (isNegative)
+            answer = "-" + answer;
+
+        return answer;
     }
-
-    ullType quotient{std::stoull(integerPart) }, remainder;
-
-    if (quotient == 0)
-        integerPartAsBinary = "0";
-
-    while (quotient > 0) {
-        remainder = quotient % 2;
-        quotient /= 2;
-        integerPartAsBinary += std::to_string(remainder);
+    catch(std::exception const&){
+        return "0000";
     }
-    std::reverse(std::begin(integerPartAsBinary), std::end(integerPartAsBinary));
-    std::string prefix1((4 - (std::size(integerPartAsBinary) % 4)), '0');//for hex form
-
-    if (std::size(prefix1) < 4)
-        integerPartAsBinary = prefix1 + integerPartAsBinary;
-
-    std::string answer{ "" };
-    for (std::size_t i{ 0 }; i < std::size(integerPartAsBinary); ++i) {
-        if (i % 4 == 0 && i != 0)
-            answer += ' ';
-        answer += integerPartAsBinary[i];
-    }
-    if (decPart.has_value())
-        answer = answer + '.' + decimalPartAsBinary;
-    if (isNegative)
-        answer = "-" + answer;
-
-    return answer;
 }
 
 std::string NumberSystem::fractionalPartToBinary(double const& decimalPart) {
