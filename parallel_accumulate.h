@@ -8,7 +8,7 @@ namespace stl {
     template <typename Iterator , typename T>
     T parallel_accumulate(Iterator first, Iterator last, T init_value, std::function<T(T, T)> func = [](T a, T b) {return a + b; }) {
         std::uint64_t const length = std::distance(first, last);
-        std::uint64_t max_chunk_size = 50;
+        std::uint64_t max_chunk_size = 100;
         if (length <= max_chunk_size)
             return std::accumulate(first, last, init_value, func);
         else {

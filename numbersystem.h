@@ -27,6 +27,8 @@ namespace stl {
         [[nodiscard]] std::string fractionalPartToBinary(double const&);
         [[nodiscard]] std::string decToOct();
         [[nodiscard]] std::string decToHex();
+        [[nodiscard]] std::string add(std::string_view, std::string_view);
+        [[nodiscard]] std::string getTwosComplementForm(std::string_view);
         std::string decimalNumber{""};
         std::string binaryNumber{ "" };
         std::string octalNumber{ "" };

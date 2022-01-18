@@ -4,16 +4,12 @@ using namespace stl;
 
 void NumberSystem::setValue(std::string const& num) {
     bool isParseable{ true };
-    for (const auto& elem : num) {
-        if ((!isdigit(elem)) && (elem != '.') && (elem != '-')) {
-            isParseable = false;
-            break;
-        }
-    }
+    isParseable = std::all_of(std::begin(num), std::end(num), [](char const& ch) {return isdigit(ch) || ch == '.' || ch == '-'; });
     if (isParseable)
         decimalNumber = num;
     else
-        decimalNumber = "0";
+        decimalNumber = "0000";
+
     binaryNumber = decToBinary();
     octalNumber = decToOct();
     hexNumber = decToHex();
@@ -34,9 +30,9 @@ std::string NumberSystem::decToBinary() {
     auto isNegative = (m_decimalNumber.front() == '-');
     std::optional<std::string> decPart{};
     std::string integerPart;
-    if (isNegative)
+    if (isNegative) {
         m_decimalNumber.erase(std::begin(m_decimalNumber));
-
+    }
     if (auto radixPosition = m_decimalNumber.find('.'); radixPosition != std::string::npos) {
         integerPart = std::string{ std::begin(m_decimalNumber), std::begin(m_decimalNumber) + radixPosition };
         decPart = "0." + std::string{std::begin(m_decimalNumber) + radixPosition + 1, std::end(m_decimalNumber)};
@@ -49,12 +45,11 @@ std::string NumberSystem::decToBinary() {
         std::string integerPartAsBinary{ "" }, decimalPartAsBinary{ "" };
         if (decPart.has_value()) {
             double result{ 0.0 };
-            //std::from_chars_result res = std::from_chars(decPart.value().data(), decPart.value().data() + decPart.value().size(), result);
+            //std::from_chars_result res = std::from_chars(decPart.value().data(), decPart.value().data() + std::size(decPart.value()), result);
             result = std::stold(decPart.value());
             decimalPartAsBinary = fractionalPartToBinary(result);
         }
-
-        ullType quotient{std::stoull(integerPart) }, remainder;
+        ullType quotient{ std::stoull(integerPart) }, remainder;
 
         if (quotient == 0)
             integerPartAsBinary = "0";
@@ -71,22 +66,62 @@ std::string NumberSystem::decToBinary() {
             integerPartAsBinary = prefix1 + integerPartAsBinary;
 
         std::string answer{ "" };
-        for (std::size_t i{ 0 }; i < std::size(integerPartAsBinary); ++i) {
-            if (i % 4 == 0 && i != 0)
-                answer += ' ';
-            answer += integerPartAsBinary[i];
+
+        //lambda to insert space in the binary number
+        auto insertSpace = [](std::string& answer, std::string& integerPartAsBinary) {
+            for (std::size_t i{ 0 }; i < std::size(integerPartAsBinary); ++i) {
+                if (i % 4 == 0 && i != 0)
+                    answer += ' ';
+                answer += integerPartAsBinary[i];
+            }
+        };
+        //................................................
+
+        if (!isNegative) {
+            insertSpace(answer, integerPartAsBinary);
+        }
+        else{
+            int prefix = (32 - std::size(integerPartAsBinary));//making the 2's complement form at least 32 bit
+            if (prefix > 0)
+                integerPartAsBinary = std::string((prefix), '0') + integerPartAsBinary;
+            integerPartAsBinary = getTwosComplementForm(integerPartAsBinary);
+            insertSpace(answer, integerPartAsBinary);
         }
         if (decPart.has_value())
             answer = answer + '.' + decimalPartAsBinary;
-        if (isNegative)
-            answer = "-" + answer;
-
         return answer;
     }
-    catch(std::exception const&){
+    catch (std::exception const&) {
         return "0000";
     }
 }
+
+
+std::string NumberSystem::getTwosComplementForm(std::string_view binary) {
+    std::string::size_type size = binary.size();
+    std::string answer(size, ' ');
+    auto flip = [](char const& c) {return c == '0' ? '1' : '0'; };
+    std::transform(std::begin(binary), std::end(binary), std::begin(answer), flip);
+    std::string one(size, '0');
+    one.back() = '1';
+    return add(answer, one);
+}
+
+std::string NumberSystem::add(std::string_view answer, std::string_view one) {
+    //the value of the map contain the result of adding each character in the key and the remainder
+    std::unordered_map<std::string_view, std::string_view> answers{ {"000", "00"}, {"001", "10"}, {"010", "10"}, {"100", "10"}, {"101", "01"},
+                                                            {"110", "01"}, {"011", "01"}, {"111", "11"}};
+    char remainder = '0';
+    std::string newAnswer(32, ' '), tempResult;
+    std::string_view::const_reverse_iterator answerIter{ answer.crbegin() }, oneIter(one.crbegin());
+    for (int index = 31; answerIter != answer.crend() && oneIter != one.crend(); ++answerIter, ++oneIter, --index) {
+        tempResult = answers[std::string("") + remainder + *answerIter + *oneIter];
+        remainder = tempResult[1];
+        newAnswer[index] = (tempResult[0]);
+    }
+    return newAnswer;
+}
+
 
 std::string NumberSystem::fractionalPartToBinary(double const& decimalPart) {
     std::uint32_t remainder{ 0 };
@@ -126,11 +161,6 @@ std::string NumberSystem::decToOct() {
     {"000", "0"}, {"001", "1"}, {"010", "2"}, {"011", "3"},
     {"100", "4"}, {"101", "5"}, {"110", "6"}, {"111", "7"}
     };
-    size_t radixPosition = m_binaryNumber.find('.'), length;
-    if (radixPosition != std::string::npos)
-        length = std::distance(std::begin(m_binaryNumber), std::begin(m_binaryNumber) + radixPosition);
-    else
-        length = std::size(m_binaryNumber);
 
     std::string prefix((3 - (std::size(m_binaryNumber) % 3)), '0');//for oct form
     if (std::size(prefix) > 0)

@@ -319,7 +319,7 @@ std::string Number::multiply(std::string_view num1, std::string_view num2) {
             product.at(i).push_back('0');
     //vector of each row of product
     std::vector<Number> numbersToAdd(std::size(product));
-    //creaates a vector of Integer objects from each row of products
+    //creates a vector of Integer objects from each row of products
     for (size_t i{ 0 }; i < std::size(product); ++i)
         numbersToAdd[i] = Number(product[i].c_str());
     auto sumOfProducts = stl::parallel_accumulate(numbersToAdd.begin(), numbersToAdd.end(), Number("0"));//love this line
